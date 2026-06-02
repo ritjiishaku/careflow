@@ -13,16 +13,12 @@ const requiredPublicVars = [
 
 export function validateEnv() {
   const missingServer = requiredServerVars.filter((v) => !process.env[v]);
-  const missingPublic = requiredPublicVars.filter(
-    (v) => !process.env["NEXT_PUBLIC_" + v.replace("NEXT_PUBLIC_", "")],
-  );
-
-  const actualPublic = requiredPublicVars.filter((v) => !process.env[v]);
+  const missingPublic = requiredPublicVars.filter((v) => !process.env[v]);
 
   if (missingServer.length > 0) {
     throw new Error(`Missing server env vars: ${missingServer.join(", ")}`);
   }
-  if (actualPublic.length > 0) {
-    throw new Error(`Missing public env vars: ${actualPublic.join(", ")}`);
+  if (missingPublic.length > 0) {
+    throw new Error(`Missing public env vars: ${missingPublic.join(", ")}`);
   }
 }
