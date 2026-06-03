@@ -1,3 +1,8 @@
+# Agent context files
+.agents/
+docs/
+AGENTS.md
+
 # Environment
 .env
 .env.local
