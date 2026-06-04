@@ -84,26 +84,26 @@ export function HeroSection() {
               </div>
             </div>
 
-            {/* Right — Mockup (hidden on mobile) */}
-            <div className="hidden lg:block lg:col-span-7" aria-hidden="true">
-              <div className="relative rounded-xl bg-slate-950/60 p-3 xl:p-4 border border-slate-800/80 shadow-2xl shadow-black/30 backdrop-blur-sm">
+            {/* Right — Mockup */}
+            <div className="lg:col-span-7" aria-hidden="true">
+              <div className="relative rounded-xl bg-slate-950/60 border border-slate-800/80 shadow-2xl shadow-black/30 backdrop-blur-sm p-2 md:p-3 xl:p-4">
                 {/* Window chrome */}
-                <div className="flex items-center gap-2 border-b border-slate-800 pb-2 mb-3">
+                <div className="flex items-center gap-2 border-b border-slate-800 pb-1.5 mb-2 md:pb-2 md:mb-3">
                   <div className="flex items-center gap-1">
-                    <div className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
-                    <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/80" />
-                    <div className="h-2.5 w-2.5 rounded-full bg-green-500/80" />
+                    <div className="h-2 w-2 md:h-2.5 md:w-2.5 rounded-full bg-red-500/80" />
+                    <div className="h-2 w-2 md:h-2.5 md:w-2.5 rounded-full bg-yellow-500/80" />
+                    <div className="h-2 w-2 md:h-2.5 md:w-2.5 rounded-full bg-green-500/80" />
                   </div>
-                  <span className="text-[9px] text-slate-500 font-mono tracking-tight">careflow-dual-engine.log</span>
-                  <div className="ml-auto flex items-center gap-1">
+                  <span className="text-[8px] md:text-[9px] text-slate-500 font-mono tracking-tight truncate">careflow-dual-engine.log</span>
+                  <div className="ml-auto flex items-center gap-1 shrink-0">
                     <span className="h-1.5 w-1.5 rounded-full bg-clinical-teal/60 animate-pulse" />
-                    <span className="text-[9px] text-clinical-teal/60 font-mono">AI READY</span>
+                    <span className="text-[8px] md:text-[9px] text-clinical-teal/60 font-mono">AI READY</span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="flex md:grid md:grid-cols-2 gap-2 md:gap-3">
                   {/* Mode 1 */}
-                  <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-3 text-[9px] leading-relaxed font-mono text-slate-300">
+                  <div className="hidden md:block rounded-lg border border-slate-800 bg-slate-900/80 p-3 text-[9px] leading-relaxed font-mono text-slate-300">
                     <div className="flex items-center gap-1.5 border-b border-slate-800 pb-1.5 mb-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-clinical-teal/60" />
                       <span className="font-bold uppercase tracking-wider text-[10px] text-clinical-teal">Clinical Summary</span>
@@ -119,8 +119,27 @@ export function HeroSection() {
                     <p className="text-red-400/90 font-bold text-[8px] uppercase tracking-wider">⚠ Red Flags: High fever, confusion.</p>
                   </div>
 
-                  {/* Mode 2 */}
-                  <div className="rounded-lg border border-clinical-teal/20 bg-slate-900/80 p-3 text-[10px] leading-relaxed text-slate-200">
+                  {/* Mobile: single compact panel */}
+                  <div className="md:hidden rounded-lg border border-clinical-teal/20 bg-slate-900/80 p-2 text-[8px] leading-relaxed text-slate-200 w-full">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-1 mb-1.5">
+                      <div className="flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500/60" />
+                        <span className="font-bold uppercase tracking-wider text-[8px] text-amber-500">Patient Info</span>
+                      </div>
+                      <span className="text-[7px] px-1 py-0.5 bg-amber-500/10 text-amber-500/90 rounded border border-amber-500/20 font-semibold">YORUBA</span>
+                    </div>
+                    <p className="font-semibold text-clinical-teal mb-0.5 text-[8px]">Ohun ti o ṣẹlẹ:</p>
+                    <p className="text-slate-400 mb-1">Ibà lọ́wọ́ọ́ kòkòrò ibà àti àtọ̀gbẹ.</p>
+                    <p className="font-semibold text-clinical-teal mb-0.5 text-[8px]">Awọn oogun rẹ:</p>
+                    <div className="border border-slate-800 rounded bg-slate-950/80 p-1 mb-1 text-[7px] space-y-0.5">
+                      <p className="text-slate-300">Artemether/Lumefantrine: Mu ni igba meji lojoojumọ.</p>
+                      <p className="text-slate-300">Metformin: Mu ni igba meji pẹlu ounjẹ.</p>
+                    </div>
+                    <p className="text-red-400/80 text-[7px] font-semibold">Tẹle itọnisọna dokita.</p>
+                  </div>
+
+                  {/* Mode 2 — desktop */}
+                  <div className="hidden md:block rounded-lg border border-clinical-teal/20 bg-slate-900/80 p-3 text-[10px] leading-relaxed text-slate-200">
                     <div className="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-2">
                       <div className="flex items-center gap-1.5">
                         <div className="h-1.5 w-1.5 rounded-full bg-amber-500/60" />
