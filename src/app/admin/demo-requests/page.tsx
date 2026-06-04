@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useRole } from "@/hooks/useRole";
-import { MessageSquare, Building, User, Clock } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 
 interface DemoRequest {
   id: string;

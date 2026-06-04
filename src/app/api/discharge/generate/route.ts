@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateDischarge, translateText, getPromptVersion, getModelVersion } from "@/services/ai-provider";
-import { writeAuditLog } from "@/services/audit-log";
 import { createServiceClient } from "@/services/supabase-server";
-import { AuditAction, Language, TranslationConfidence, UserRole } from "@/types/schemas";
+import { AuditAction, UserRole } from "@/types/schemas";
 import { apiError, ErrorCodes } from "@/lib/error-codes";
 import { auth } from "@/lib/auth";
 
@@ -62,43 +61,18 @@ export async function POST(request: NextRequest) {
     const patientId = crypto.randomUUID();
     const recordId = crypto.randomUUID();
 
-    const DEFAULT_FACILITY_ID = "11111111-1111-1111-1111-111111111111";
-    const facilityId = session.user.facilityId ?? (patientInput.facilityId as string) ?? DEFAULT_FACILITY_ID;
-
-    const { error: patientInsertError } = await supabase.from("patient_inputs").insert({
-      patient_id: patientId,
-      facility_id: facilityId,
-      facility_name: patientInput.facilityName as string,
-      facility_code: (patientInput.facilityCode as string) ?? null,
-      ward_name: (patientInput.wardName as string) ?? null,
-      admission_date: patientInput.admissionDate as string,
-      discharge_date: patientInput.dischargeDate as string,
-      patient_name: patientInput.patientName as string,
-      age: patientInput.age as number,
-      gender: patientInput.gender as string,
-      hospital_number: patientInput.hospitalNumber as string,
-      nhis_number: (patientInput.nhisNumber as string) ?? null,
-      diagnosis: patientInput.diagnosis as string,
-      treatment_given: patientInput.treatmentGiven as string,
-      procedures_performed: (patientInput.proceduresPerformed as string[]) ?? [],
-      medications: patientInput.medications as unknown as string,
-      follow_up_instructions: (patientInput.followUpInstructions as string) ?? null,
-      additional_notes: (patientInput.additionalNotes as string) ?? null,
-      language_requested: (patientInput.languageRequested as string) ?? "en",
-      discharged_by: patientInput.dischargedBy as string,
-      clinician_license_no: (patientInput.clinicianLicenseNo as string) ?? null,
-    });
-
-    if (patientInsertError) {
+    const facilityId = session.user.facilityId ?? (patientInput.facilityId as string | null);
+    if (!facilityId) {
       return NextResponse.json(
-        apiError(ErrorCodes.SUPABASE_ERROR, { operation: "INSERT patient_inputs" }),
-        { status: 500 },
+        { error: "Facility assignment required. Contact your admin." },
+        { status: 400 },
       );
     }
 
     let translatedOutput: string | null = null;
     let translationLanguage: string | null = null;
     let translationConfidence: string | null = null;
+    let translationRequestId: string | null = null;
 
     const langRequested = patientInput.languageRequested as string | undefined;
     if (langRequested && langRequested !== "en") {
@@ -110,6 +84,7 @@ export async function POST(request: NextRequest) {
       }
 
       translationLanguage = langRequested;
+      translationRequestId = crypto.randomUUID();
 
       const translation = await translateText(
         generationResult.patientFriendlyOutput,
@@ -120,52 +95,51 @@ export async function POST(request: NextRequest) {
       translationConfidence = translation.confidence;
     }
 
-    const { error: insertError } = await supabase.from("discharge_records").insert({
-      record_id: recordId,
-      patient_input_id: patientId,
-      facility_id: facilityId,
-      generated_at: new Date().toISOString(),
-      generated_by_user_id: userId,
-      prompt_version: getPromptVersion(),
-      model_version: getModelVersion(),
-      clinical_summary: generationResult.clinicalSummary,
-      patient_friendly_output: generationResult.patientFriendlyOutput,
-      translated_output: translatedOutput,
-      translation_language: translationLanguage,
-      translation_confidence: translationConfidence,
-      missing_fields_log: generationResult.missingFieldsLog,
-      flagged_issues: generationResult.flaggedIssues,
-      status: "draft",
+    const { error: rpcError } = await supabase.rpc("create_discharge_record", {
+      p_patient_id: patientId,
+      p_record_id: recordId,
+      p_facility_id: facilityId,
+      p_facility_name: patientInput.facilityName as string,
+      p_facility_code: (patientInput.facilityCode as string) ?? null,
+      p_ward_name: (patientInput.wardName as string) ?? null,
+      p_admission_date: patientInput.admissionDate as string,
+      p_discharge_date: patientInput.dischargeDate as string,
+      p_patient_name: patientInput.patientName as string,
+      p_age: patientInput.age as number,
+      p_gender: patientInput.gender as string,
+      p_hospital_number: patientInput.hospitalNumber as string,
+      p_nhis_number: (patientInput.nhisNumber as string) ?? null,
+      p_diagnosis: patientInput.diagnosis as string,
+      p_treatment_given: patientInput.treatmentGiven as string,
+      p_procedures_performed: (patientInput.proceduresPerformed as string[]) ?? [],
+      p_medications: patientInput.medications,
+      p_follow_up_instructions: (patientInput.followUpInstructions as string) ?? null,
+      p_additional_notes: (patientInput.additionalNotes as string) ?? null,
+      p_language_requested: (patientInput.languageRequested as string) ?? "en",
+      p_discharged_by: patientInput.dischargedBy as string,
+      p_clinician_license_no: (patientInput.clinicianLicenseNo as string) ?? null,
+      p_generated_by_user_id: userId,
+      p_user_role: userRole,
+      p_prompt_version: getPromptVersion(),
+      p_model_version: getModelVersion(),
+      p_clinical_summary: generationResult.clinicalSummary,
+      p_patient_friendly_output: generationResult.patientFriendlyOutput,
+      p_translated_output: translatedOutput,
+      p_translation_language: translationLanguage,
+      p_translation_confidence: translationConfidence,
+      p_missing_fields_log: generationResult.missingFieldsLog ?? [],
+      p_flagged_issues: generationResult.flaggedIssues ?? [],
+      p_translation_request_id: translationRequestId,
+      p_translation_source_text: generationResult.patientFriendlyOutput,
+      p_translation_target_language: translationLanguage,
     });
 
-    if (insertError) {
+    if (rpcError) {
       return NextResponse.json(
-        apiError(ErrorCodes.SUPABASE_ERROR, { operation: "INSERT discharge_records" }),
+        apiError(ErrorCodes.SUPABASE_ERROR, { details: rpcError.message }),
         { status: 500 },
       );
     }
-
-    if (langRequested && langRequested !== "en" && translationConfidence !== "failed") {
-      await supabase.from("translation_requests").insert({
-        request_id: crypto.randomUUID(),
-        record_id: recordId,
-        source_text: generationResult.patientFriendlyOutput,
-        target_language: langRequested,
-        output_text: translatedOutput,
-        confidence: translationConfidence === "low" ? TranslationConfidence.Low : TranslationConfidence.High,
-        fallback_used: translationConfidence === "low",
-        requested_at: new Date().toISOString(),
-        completed_at: new Date().toISOString(),
-      });
-    }
-
-    await writeAuditLog({
-      recordId,
-      userId,
-      userRole: userRole as any,
-      action: AuditAction.Generate,
-      ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
-    });
 
     return NextResponse.json({
       success: true,

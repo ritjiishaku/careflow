@@ -26,7 +26,12 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("discharge_records")
-      .select("*", { count: "estimated" });
+      .select(`
+        record_id, status, generated_at, facility_id,
+        patient_input:patient_input_id (
+          patient_name, facility_name, discharge_date, discharged_by
+        )
+      `, { count: "estimated" });
 
     if (session.user.facilityId) {
       query = query.eq("facility_id", session.user.facilityId);
@@ -36,26 +41,8 @@ export async function GET(request: NextRequest) {
       query = query.eq("status", status);
     }
 
-    let searchIds: string[] | null = null;
     if (search) {
-      const { data: matchingInputs } = await supabase
-        .from("patient_inputs")
-        .select("patient_id")
-        .ilike("patient_name", `%${search}%`);
-
-      if (matchingInputs && matchingInputs.length > 0) {
-        searchIds = matchingInputs.map((r: Record<string, unknown>) => r.patient_id as string);
-      } else {
-        return NextResponse.json({
-          success: true,
-          data: [],
-          pagination: { page, limit, total: 0, totalPages: 0 },
-        });
-      }
-    }
-
-    if (searchIds) {
-      query = query.in("patient_input_id", searchIds);
+      query = query.ilike("patient_input.patient_name", `%${search}%`);
     }
 
     const { data, error, count } = await query
@@ -64,21 +51,14 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error;
 
-    const recordIds = (data ?? []).map((d: Record<string, unknown>) => d.patient_input_id as string);
-    const { data: inputs } = recordIds.length > 0
-      ? await supabase.from("patient_inputs").select("patient_id, patient_name, facility_name, discharge_date, discharged_by").in("patient_id", recordIds)
-      : { data: [] };
-
-    const inputMap = new Map((inputs ?? []).map((i: Record<string, unknown>) => [i.patient_id, i]));
-
     const records = (data ?? []).map((d: Record<string, unknown>) => {
-      const pi = inputMap.get(d.patient_input_id as string);
+      const pi = d.patient_input as Record<string, unknown> | undefined;
       return {
         recordId: d.record_id,
-        patientName: (pi as Record<string, unknown> | undefined)?.patient_name ?? "",
-        facilityName: (pi as Record<string, unknown> | undefined)?.facility_name ?? "",
-        dischargeDate: (pi as Record<string, unknown> | undefined)?.discharge_date ?? "",
-        dischargedBy: (pi as Record<string, unknown> | undefined)?.discharged_by ?? "",
+        patientName: pi?.patient_name as string ?? "",
+        facilityName: pi?.facility_name as string ?? "",
+        dischargeDate: pi?.discharge_date as string ?? "",
+        dischargedBy: pi?.discharged_by as string ?? "",
         status: d.status,
         generatedAt: d.generated_at,
       };
@@ -95,10 +75,9 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (err) {
-    console.error("DISCHARGE LIST ERROR:", err);
-    const message = err instanceof Error ? err.message : JSON.stringify(err);
+    const message = err instanceof Error ? err.message : "INTERNAL_SERVER_ERROR";
     return NextResponse.json(
-      { success: false, error: { code: "SUPABASE_ERROR", message, details: { operation: "LIST discharge_records" } } },
+      apiError(ErrorCodes.SUPABASE_ERROR, { operation: "LIST discharge_records", details: message }),
       { status: 500 },
     );
   }

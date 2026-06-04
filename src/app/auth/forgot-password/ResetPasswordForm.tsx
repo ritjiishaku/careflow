@@ -74,8 +74,8 @@ export function ResetPasswordForm({ onSwitchToLogin }: ResetPasswordFormProps = 
 
   return (
     <div className="w-full max-w-md rounded-2xl bg-pure-white px-7 py-8 shadow-xl shadow-slate-200/50 border border-slate-100">
-      <h1 className="text-xl font-bold text-deep-navy mb-1">Set new password</h1>
-      <p className="text-sm text-cool-grey mb-5">Enter your new password below.</p>
+      <h1 className="text-xl font-bold text-deep-navy mb-1">Choose a new password</h1>
+      <p className="text-sm text-cool-grey mb-5">Make it at least 8 characters.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1">

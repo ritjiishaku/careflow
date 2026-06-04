@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/services/supabase-server";
 import { writeAuditLog } from "@/services/audit-log";
+import { verifyFacilityAccess } from "@/services/facility-access";
 import { AuditAction, UserRole } from "@/types/schemas";
 import { apiError, ErrorCodes } from "@/lib/error-codes";
 import { auth } from "@/lib/auth";
@@ -15,6 +16,14 @@ export async function GET(
   }
 
   const { id } = await params;
+
+  const access = await verifyFacilityAccess(id, session.user.facilityId);
+  if (!access.allowed) {
+    return NextResponse.json(
+      apiError(ErrorCodes.RECORD_NOT_FOUND, { recordId: id }),
+      { status: 404 },
+    );
+  }
 
   const supabase = createServiceClient();
 
@@ -56,6 +65,15 @@ export async function PUT(
   }
 
   const { id } = await params;
+
+  const access = await verifyFacilityAccess(id, session.user.facilityId);
+  if (!access.allowed) {
+    return NextResponse.json(
+      apiError(ErrorCodes.RECORD_NOT_FOUND, { recordId: id }),
+      { status: 404 },
+    );
+  }
+
   const body = await request.json();
 
   const supabase = createServiceClient();
@@ -109,6 +127,7 @@ export async function PUT(
     userId: session.user.id,
     userRole: role as any,
     action: AuditAction.Edit,
+    facilityId: session.user.facilityId,
     ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
     changesDiff: {
       clinicalSummary: {

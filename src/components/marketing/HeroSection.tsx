@@ -45,10 +45,19 @@ export function HeroSection() {
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 transition-transform duration-200 group-hover:translate-x-1" />
               </a>
               <Link
-                href="/auth?view=signup"
+                href="/register-facility"
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-600/50 bg-slate-800/50 text-white hover:bg-slate-700/60 text-base sm:text-lg font-semibold px-8 py-4 sm:px-10 sm:py-5 shadow-lg shadow-black/20 transition-all duration-200 whitespace-nowrap text-center w-full sm:w-auto hover:-translate-y-0.5 active:translate-y-0"
               >
-                Sign Up
+                Register your facility
+              </Link>
+            </div>
+
+            <div className="text-center lg:text-left">
+              <Link
+                href="/register-facility"
+                className="text-xs sm:text-sm text-slate-400 hover:text-clinical-teal transition-colors underline underline-offset-2 decoration-slate-700 hover:decoration-clinical-teal"
+              >
+                Your hospital not listed? Register your facility →
               </Link>
             </div>
 

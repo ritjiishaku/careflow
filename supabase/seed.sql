@@ -31,34 +31,34 @@ INSERT INTO facilities (facility_id, facility_code, facility_name) VALUES
 -- Generate with: `supabase db reset && select crypt('CareFlow@2026', gen_salt('bf'));`
 -- ============================================
 
--- Doctor: Dr. Emeka Okafor
+-- Doctor: Ritji Ishaku
 INSERT INTO auth.users (id, email, raw_user_meta_data, encrypted_password, created_at, updated_at)
 VALUES (
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-    'dr.emeka@careflow.dev',
-    '{"full_name": "Dr. Emeka Okafor"}',
+    'dr.ritji@careflow.dev',
+    '{"full_name": "Ritji Ishaku"}',
     crypt('CareFlow@2026', gen_salt('bf')),
     NOW(),
     NOW()
 ) ON CONFLICT (id) DO NOTHING;
 
--- Nurse: Nurse Fatima Bello
+-- Nurse: Ritji Ishaku
 INSERT INTO auth.users (id, email, raw_user_meta_data, encrypted_password, created_at, updated_at)
 VALUES (
     'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-    'fatima.bello@careflow.dev',
-    '{"full_name": "Nurse Fatima Bello"}',
+    'nurse.ritji@careflow.dev',
+    '{"full_name": "Ritji Ishaku"}',
     crypt('CareFlow@2026', gen_salt('bf')),
     NOW(),
     NOW()
 ) ON CONFLICT (id) DO NOTHING;
 
--- Admin: Mr. Chidi Okonkwo (Hospital Administrator)
+-- Admin: Ritji Ishaku (Hospital Administrator)
 INSERT INTO auth.users (id, email, raw_user_meta_data, encrypted_password, created_at, updated_at)
 VALUES (
     'cccccccc-cccc-cccc-cccc-cccccccccccc',
-    'chidi.okonkwo@careflow.dev',
-    '{"full_name": "Mr. Chidi Okonkwo"}',
+    'admin.ritji@careflow.dev',
+    '{"full_name": "Ritji Ishaku"}',
     crypt('CareFlow@2026', gen_salt('bf')),
     NOW(),
     NOW()
@@ -70,11 +70,11 @@ VALUES (
 
 INSERT INTO user_profiles (user_id, email, full_name, role, facility_id) VALUES
     -- Doctor
-    ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'dr.emeka@careflow.dev', 'Dr. Emeka Okafor', 'doctor', '11111111-1111-1111-1111-111111111111'),
+    ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'dr.ritji@careflow.dev', 'Ritji Ishaku', 'doctor', '11111111-1111-1111-1111-111111111111'),
     -- Nurse
-    ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'fatima.bello@careflow.dev', 'Nurse Fatima Bello', 'nurse', '11111111-1111-1111-1111-111111111111'),
+    ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'nurse.ritji@careflow.dev', 'Ritji Ishaku', 'nurse', '11111111-1111-1111-1111-111111111111'),
     -- Admin
-    ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'chidi.okonkwo@careflow.dev', 'Mr. Chidi Okonkwo', 'admin', '11111111-1111-1111-1111-111111111111');
+    ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'admin.ritji@careflow.dev', 'Ritji Ishaku', 'admin', '11111111-1111-1111-1111-111111111111');
 
 -- ============================================
 -- PATIENT INPUTS (Nigerian clinical example)
@@ -149,7 +149,7 @@ INSERT INTO patient_inputs (
     'Return to clinic in 2 weeks for blood pressure and blood glucose check. Bring blood glucose log. Follow up with endocrinology in 1 month.',
     'Patient is a teacher at local primary school. Lives with husband. Two children are supportive.',
     'yo',
-    'Dr. Emeka Okafor',
+    'Ritji Ishaku',
     'MDCN/2015/07821'
 );
 
@@ -230,7 +230,7 @@ Red flag warnings
 - Fainting or severe dizziness
 
 Discharged by
-Name:              Dr. Emeka Okafor
+Name:              Ritji Ishaku
 MDCN Licence No.:  MDCN/2015/07821
 ──────────────────────────────────────────',
     '──────────────────────────────────────────
@@ -261,7 +261,7 @@ When to return to the hospital
 Your follow-up appointment
 Return to the clinic in 2 weeks to check your blood pressure and blood sugar. Bring your blood sugar log book. See the diabetes doctor in 1 month.
 
-Signed by: Dr. Emeka Okafor
+Signed by: Ritji Ishaku
 Date: 02 June 2026',
     'AWỌN ILANA IṢUJU NILE RẸ
 
@@ -286,7 +286,7 @@ AWỌN AMI EEWU — PADA SI ILE-IWOSAN LẸSẸKẸSẸ TI:
 - Suga ẹjẹ to ju 300 lọ tabi kere si 70
 - Daku tabi riru pupọ
 
-Signed by: Dr. Emeka Okafor
+Signed by: Ritji Ishaku
 Date: 02 June 2026',
     'yo',
     'high',
@@ -376,7 +376,7 @@ INSERT INTO audit_logs (
     '2026-06-02 10:32:00+00',
     '192.168.1.100',
     NULL,
-    'Doctor reviewed discharge output'
+    'Ritji Ishaku reviewed discharge output'
 );
 
 -- Edit action (doctor edited follow-up instructions)
@@ -399,7 +399,7 @@ INSERT INTO audit_logs (
     '2026-06-02 10:33:00+00',
     '192.168.1.100',
     '{"follow_up_instructions": {"old": "Return to clinic in 2 weeks", "new": "Return to clinic in 1 week"}}'::jsonb,
-    'Doctor shortened follow-up interval'
+    'Ritji Ishaku shortened follow-up interval'
 );
 
 -- ============================================

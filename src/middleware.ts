@@ -7,7 +7,6 @@ const publicPaths = [
   "/og-image",
   "/auth",
   "/api/auth",
-  "/api/register",
   "/api/facilities",
   "/api/contact",
   "/api/demo",

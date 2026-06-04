@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Check, Copy } from "lucide-react";
+import { MessageCircle, Check } from "lucide-react";
 
 interface WhatsAppShareButtonProps {
   patientFriendlyOutput: string;

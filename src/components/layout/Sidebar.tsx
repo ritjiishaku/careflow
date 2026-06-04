@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, Suspense } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRole } from "@/hooks/useRole";
@@ -13,6 +13,8 @@ import {
   LogOut,
   ChevronUp,
   MessageSquare,
+  Building,
+  Shield,
 } from "lucide-react";
 
 function AvatarDisplay({ src, name }: { src: string | null; name?: string | null }) {
@@ -62,8 +64,10 @@ export function Sidebar({ onClose }: SidebarProps) {
   }, []);
 
   const links = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["doctor", "nurse", "admin"] },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["doctor", "nurse"] },
     { href: "/dashboard?view=new", label: "New Discharge", icon: FilePlus, roles: ["doctor", "nurse"] },
+    { href: "/admin", label: "Facility Management", icon: Building, roles: ["admin"] },
+    { href: "/admin/compliance", label: "NDPR Compliance", icon: Shield, roles: ["admin"] },
     { href: "/audit", label: "Audit Log", icon: ClipboardList, roles: ["admin"] },
     { href: "/admin/demo-requests", label: "Demo Requests", icon: MessageSquare, roles: ["admin"] },
   ];
@@ -80,8 +84,17 @@ export function Sidebar({ onClose }: SidebarProps) {
         setMenuOpen(false);
       }
     }
-    if (menuOpen) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    if (menuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
   }, [menuOpen]);
 
   return (
@@ -97,7 +110,9 @@ export function Sidebar({ onClose }: SidebarProps) {
           const linkView = Object.fromEntries(new URLSearchParams(link.href.split("?")[1] || "").entries()).view;
           const isActive = linkView
             ? currentPath === linkPath && currentView === linkView
-            : currentPath.startsWith(linkPath) && (linkPath !== "/dashboard" || !currentView);
+            : linkPath === "/dashboard"
+              ? currentPath === linkPath && !currentView
+              : currentPath === linkPath;
           return (
             <Link
               key={link.href}
@@ -120,6 +135,8 @@ export function Sidebar({ onClose }: SidebarProps) {
       <div className="border-t border-white/[0.06] shrink-0" ref={menuRef}>
         <button
           onClick={() => setMenuOpen(!menuOpen)}
+          aria-expanded={menuOpen}
+          aria-haspopup="true"
           className="flex w-full items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors"
         >
           <AvatarDisplay src={avatarSrc} name={userName} />
@@ -145,7 +162,11 @@ export function Sidebar({ onClose }: SidebarProps) {
               Settings
             </Link>
             <button
-              onClick={() => signOut({ callbackUrl: "/auth" })}
+              onClick={() => {
+                if (window.confirm("Sign out of CareFlow?")) {
+                  signOut({ callbackUrl: "/auth" });
+                }
+              }}
               className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-red-400/70 hover:bg-red-500/10 hover:text-red-400 transition-colors"
             >
               <LogOut className="h-4 w-4" />

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/services/supabase-server";
+import { apiError, ErrorCodes } from "@/lib/error-codes";
 
 export async function GET() {
   try {
@@ -13,9 +14,6 @@ export async function GET() {
 
     return NextResponse.json({ success: true, data: data ?? [] });
   } catch {
-    return NextResponse.json(
-      { success: false, error: "Failed to load facilities" },
-      { status: 500 },
-    );
+    return NextResponse.json(apiError(ErrorCodes.SUPABASE_ERROR), { status: 500 });
   }
 }

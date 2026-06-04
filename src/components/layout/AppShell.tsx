@@ -1,9 +1,8 @@
 "use client";
 
-import { Suspense, useState, type ReactNode } from "react";
+import { Suspense, useState, useEffect, type ReactNode } from "react";
 import { Sidebar } from "./Sidebar";
 import { TopNav } from "./TopNav";
-import { Menu } from "lucide-react";
 
 interface AppShellProps {
   children: ReactNode;
@@ -11,6 +10,14 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") setSidebarOpen(false);
+    }
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, []);
 
   return (
     <div className="flex h-screen bg-cool-off-white">

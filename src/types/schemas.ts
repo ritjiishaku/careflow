@@ -113,4 +113,5 @@ export interface AuditLog {
   ipAddress?: string | null;
   changesDiff?: Record<string, unknown> | null;
   notes?: string | null;
+  facilityId?: string | null;
 }

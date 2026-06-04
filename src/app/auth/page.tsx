@@ -2,12 +2,12 @@
 
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { LoginForm } from "./login/LoginForm";
-import { SignUpForm } from "./signup/SignUpForm";
 import { ForgotPasswordForm } from "./forgot-password/ForgotPasswordForm";
 import { ResetPasswordForm } from "./forgot-password/ResetPasswordForm";
 
-type AuthView = "login" | "signup" | "forgot-password" | "reset-password";
+type AuthView = "login" | "forgot-password" | "reset-password";
 
 function AuthContent() {
   const searchParams = useSearchParams();
@@ -15,31 +15,23 @@ function AuthContent() {
   const [view, setView] = useState<AuthView>(initialView);
 
   return (
-    <div className="flex h-dvh items-center justify-center bg-gradient-to-br from-clinical-teal/5 via-cool-off-white to-cool-off-white px-4 py-8" style={{ paddingBottom: "env(safe-area-inset-bottom, 1rem)" }}>
-      <div className="w-full max-w-md max-h-full overflow-y-auto">
-        {view === "login" && (
-          <LoginForm
-            onSwitchToSignup={() => setView("signup")}
-            onSwitchToForgotPassword={() => setView("forgot-password")}
-          />
-        )}
-        {view === "signup" && (
-          <SignUpForm onSwitchToLogin={() => setView("login")} />
-        )}
-        {view === "forgot-password" && (
-          <ForgotPasswordForm onSwitchToLogin={() => setView("login")} />
-        )}
-        {view === "reset-password" && (
-          <ResetPasswordForm onSwitchToLogin={() => setView("login")} />
-        )}
-      </div>
-    </div>
+    <AuthShell>
+      {view === "login" && (
+        <LoginForm onSwitchToForgotPassword={() => setView("forgot-password")} />
+      )}
+      {view === "forgot-password" && (
+        <ForgotPasswordForm onSwitchToLogin={() => setView("login")} />
+      )}
+      {view === "reset-password" && (
+        <ResetPasswordForm onSwitchToLogin={() => setView("login")} />
+      )}
+    </AuthShell>
   );
 }
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-dvh items-center justify-center bg-cool-off-white p-4">Loading...</div>}>
+    <Suspense fallback={<div className="flex h-dvh items-center justify-center bg-cool-off-white p-4">Loading...</div>}>
       <AuthContent />
     </Suspense>
   );

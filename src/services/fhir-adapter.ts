@@ -285,7 +285,10 @@ export function fhirMedicationRequests(
     medicationCodeableConcept: { text: med.name as string },
     dosageInstruction: [
       {
-        doseAndRate: [{ doseQuantity: { value: parseFloat(med.dosage as string) || 0, unit: (med.dosage as string)?.replace(/[\d.]/g, "") || "" } }],
+        doseAndRate: [{ doseQuantity: (() => {
+          const match = (med.dosage as string)?.match(/^([\d.]+)\s*(.*)$/);
+          return { value: match ? parseFloat(match[1]) : 0, unit: match?.[2] || "" };
+        })() }],
         timing: { code: { text: med.frequency as string } },
       },
     ],

@@ -78,8 +78,8 @@ export function ForgotPasswordForm({ onSwitchToLogin }: ForgotPasswordFormProps 
       </button>
 
       <div className="rounded-2xl bg-pure-white px-7 py-8 shadow-xl shadow-slate-200/50 border border-slate-100">
-        <h1 className="text-xl font-bold text-deep-navy mb-1">Reset password</h1>
-        <p className="text-sm text-cool-grey mb-5">Enter your email and we&apos;ll send you a reset link.</p>
+        <h1 className="text-xl font-bold text-deep-navy mb-1">Forgot your password?</h1>
+        <p className="text-sm text-cool-grey mb-5">No worries. Enter your email and we&apos;ll send you a reset link.</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { useRole } from "@/hooks/useRole";
 import { Card, CardContent } from "@/components/ui/card";
-import { Shield, Hospital, Camera, Copy, Check } from "lucide-react";
+import { Shield, Hospital, Camera, Copy, Check, ArrowRight } from "lucide-react";
 
 const AVATAR_KEY = "careflow-avatar";
 
@@ -79,6 +80,7 @@ function ProfileAvatar() {
 
 export default function SettingsPage() {
   const { role, userId, userName } = useRole();
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
 
   return (
@@ -132,37 +134,47 @@ export default function SettingsPage() {
 
         {role === "admin" && (
           <>
-            <Card className="border-slate/10">
-              <CardContent className="p-6 sm:p-8">
-                <div className="flex items-start gap-4">
-                  <div className="rounded-lg bg-clinical-teal/10 p-3 shrink-0">
-                    <Hospital className="h-5 w-5 text-clinical-teal" />
+            <button type="button" onClick={() => router.push("/admin")} className="w-full text-left">
+              <Card className="border-slate/10 transition-shadow hover:shadow-md cursor-pointer">
+                <CardContent className="p-6 sm:p-8">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-lg bg-clinical-teal/10 p-3 shrink-0">
+                        <Hospital className="h-5 w-5 text-clinical-teal" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold text-deep-navy">Facility Management</h3>
+                        <p className="mt-1 text-sm text-cool-grey leading-relaxed">
+                          View facilities, manage clinicians, and configure system preferences.
+                        </p>
+                      </div>
+                    </div>
+                    <ArrowRight className="mt-1 h-5 w-5 shrink-0 text-cool-grey" />
                   </div>
-                  <div>
-                    <h3 className="text-base font-bold text-deep-navy">Facility Management</h3>
-                    <p className="mt-1 text-sm text-cool-grey leading-relaxed">
-                      Add clinicians, manage facility details, and configure system preferences.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </button>
 
-            <Card className="border-slate/10">
-              <CardContent className="p-6 sm:p-8">
-                <div className="flex items-start gap-4">
-                  <div className="rounded-lg bg-clinical-teal/10 p-3 shrink-0">
-                    <Shield className="h-5 w-5 text-clinical-teal" />
+            <button type="button" onClick={() => router.push("/admin/compliance")} className="w-full text-left">
+              <Card className="border-slate/10 transition-shadow hover:shadow-md cursor-pointer">
+                <CardContent className="p-6 sm:p-8">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-lg bg-clinical-teal/10 p-3 shrink-0">
+                        <Shield className="h-5 w-5 text-clinical-teal" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold text-deep-navy">NDPR Compliance</h3>
+                        <p className="mt-1 text-sm text-cool-grey leading-relaxed">
+                          View audit logs, monitor data access, and ensure regulatory compliance.
+                        </p>
+                      </div>
+                    </div>
+                    <ArrowRight className="mt-1 h-5 w-5 shrink-0 text-cool-grey" />
                   </div>
-                  <div>
-                    <h3 className="text-base font-bold text-deep-navy">NDPR Compliance</h3>
-                    <p className="mt-1 text-sm text-cool-grey leading-relaxed">
-                      Audit logs, data retention policies, and consent management settings.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </button>
           </>
         )}
       </div>

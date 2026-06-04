@@ -8,7 +8,7 @@ import { NewDischargeView } from "./NewDischargeView";
 import { DischargeDetailView } from "./DischargeDetailView";
 import { DischargeOutputView } from "./DischargeOutputView";
 
-export function AnimatedView({ children }: { children: React.ReactNode }) {
+function AnimatedView({ children }: { children: React.ReactNode }) {
   return <div className="animate-in fade-in slide-in-from-right-2 duration-300">{children}</div>;
 }
 

@@ -9,6 +9,7 @@ export async function writeAuditLog(entry: {
   ipAddress?: string;
   changesDiff?: Record<string, unknown>;
   notes?: string;
+  facilityId?: string;
 }): Promise<void> {
   const supabase = createServiceClient();
 
@@ -20,6 +21,7 @@ export async function writeAuditLog(entry: {
     ip_address: entry.ipAddress ?? null,
     changes_diff: entry.changesDiff ?? null,
     notes: entry.notes ?? null,
+    facility_id: entry.facilityId ?? null,
   });
 
   if (error) {
@@ -69,5 +71,6 @@ function mapAuditLog(raw: Record<string, unknown>): AuditLog {
     ipAddress: raw.ip_address as string | null,
     changesDiff: raw.changes_diff as Record<string, unknown> | null,
     notes: raw.notes as string | null,
+    facilityId: raw.facility_id as string | null,
   };
 }
