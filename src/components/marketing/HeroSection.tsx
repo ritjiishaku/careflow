@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { ArrowRight, Shield, Activity, Users } from "lucide-react";
 import Link from "next/link";
 
 export function HeroSection() {
-  const [mobileTab, setMobileTab] = useState<"clinical" | "patient">("patient");
   return (
-    <section className="relative bg-deep-navy min-h-dvh flex flex-col text-white">
+    <section className="relative bg-deep-navy h-dvh flex flex-col text-white overflow-hidden">
       {/* Background layers */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(11,110,110,0.15),transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(11,110,110,0.08),transparent_50%)]" />
@@ -86,91 +84,25 @@ export function HeroSection() {
               </div>
             </div>
 
-            {/* Right — Mockup */}
-            <div className="lg:col-span-7" aria-hidden="true">
-              <div className="relative rounded-xl bg-slate-950/60 border border-slate-800/80 shadow-2xl shadow-black/30 backdrop-blur-sm p-2 md:p-3 xl:p-4">
+            {/* Right — Mockup (desktop only) */}
+            <div className="hidden lg:block lg:col-span-7" aria-hidden="true">
+              <div className="relative rounded-xl bg-slate-950/60 border border-slate-800/80 shadow-2xl shadow-black/30 backdrop-blur-sm p-3 xl:p-4">
                 {/* Window chrome */}
-                <div className="flex items-center gap-2 border-b border-slate-800 pb-1.5 mb-2 md:pb-2 md:mb-3">
+                <div className="flex items-center gap-2 border-b border-slate-800 pb-2 mb-3">
                   <div className="flex items-center gap-1">
-                    <div className="h-2 w-2 md:h-2.5 md:w-2.5 rounded-full bg-red-500/80" />
-                    <div className="h-2 w-2 md:h-2.5 md:w-2.5 rounded-full bg-yellow-500/80" />
-                    <div className="h-2 w-2 md:h-2.5 md:w-2.5 rounded-full bg-green-500/80" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/80" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-green-500/80" />
                   </div>
-                  <span className="text-[8px] md:text-[9px] text-slate-500 font-mono tracking-tight truncate">careflow-dual-engine.log</span>
-                  <div className="ml-auto flex items-center gap-1 shrink-0">
+                  <span className="text-[9px] text-slate-500 font-mono tracking-tight">careflow-dual-engine.log</span>
+                  <div className="ml-auto flex items-center gap-1">
                     <span className="h-1.5 w-1.5 rounded-full bg-clinical-teal/60 animate-pulse" />
-                    <span className="text-[8px] md:text-[9px] text-clinical-teal/60 font-mono">AI READY</span>
+                    <span className="text-[9px] text-clinical-teal/60 font-mono">AI READY</span>
                   </div>
                 </div>
 
-                {/* ── Mobile: tab buttons ── */}
-                <div className="md:hidden flex gap-1 mb-2">
-                  <button
-                    type="button"
-                    onClick={() => setMobileTab("clinical")}
-                    className={`flex-1 rounded-md py-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
-                      mobileTab === "clinical"
-                        ? "bg-clinical-teal/20 text-clinical-teal border border-clinical-teal/30"
-                        : "bg-slate-800/60 text-slate-400 border border-slate-700/50"
-                    }`}
-                  >
-                    Clinical
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMobileTab("patient")}
-                    className={`flex-1 rounded-md py-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
-                      mobileTab === "patient"
-                        ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                        : "bg-slate-800/60 text-slate-400 border border-slate-700/50"
-                    }`}
-                  >
-                    Patient
-                  </button>
-                </div>
-
-                {/* ── Mobile panels (single, tab-controlled) ── */}
-                <div className="md:hidden">
-                  {mobileTab === "clinical" && (
-                    <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-3 text-[9px] leading-relaxed font-mono text-slate-300">
-                      <div className="flex items-center gap-1.5 border-b border-slate-800 pb-1.5 mb-2">
-                        <div className="h-1.5 w-1.5 rounded-full bg-clinical-teal/60" />
-                        <span className="font-bold uppercase tracking-wider text-[10px] text-clinical-teal">Clinical Summary</span>
-                      </div>
-                      <p className="text-slate-500 mb-1.5 text-[8px] uppercase tracking-wider"># FOR HOSPITAL RECORDS</p>
-                      <p className="mb-0.5"><span className="text-slate-500">Patient:</span> Emeka Obi, 45y M</p>
-                      <p className="mb-0.5"><span className="text-slate-500">Diagnosis:</span> Severe Malaria, Type 2 DM</p>
-                      <p className="mb-0.5"><span className="text-slate-500">Medications:</span></p>
-                      <div className="border border-slate-800 rounded bg-slate-950/80 p-1.5 mb-1.5 space-y-0.5">
-                        <p className="text-slate-400">- Artemether/Lumefantrine 80/480mg PO BID x 3d</p>
-                        <p className="text-slate-400">- Metformin 500mg PO BID with meals</p>
-                      </div>
-                      <p className="text-red-400/90 font-bold text-[8px] uppercase tracking-wider">⚠ Red Flags: High fever, confusion.</p>
-                    </div>
-                  )}
-                  {mobileTab === "patient" && (
-                    <div className="rounded-lg border border-clinical-teal/20 bg-slate-900/80 p-3 text-[10px] leading-relaxed text-slate-200">
-                      <div className="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-2">
-                        <div className="flex items-center gap-1.5">
-                          <div className="h-1.5 w-1.5 rounded-full bg-amber-500/60" />
-                          <span className="font-bold uppercase tracking-wider text-[10px] text-amber-500">Patient Info</span>
-                        </div>
-                        <span className="text-[8px] px-1 py-0.5 bg-amber-500/10 text-amber-500/90 rounded border border-amber-500/20 font-semibold">YORUBA</span>
-                      </div>
-                      <p className="font-semibold text-clinical-teal mb-0.5 text-[9px]">Ohun ti o ṣẹlẹ:</p>
-                      <p className="text-slate-400 mb-1.5">Ibà lọ́wọ́ọ́ kòkòrò ibà àti àtọ̀gbẹ.</p>
-                      <p className="font-semibold text-clinical-teal mb-0.5 text-[9px]">Awọn oogun rẹ:</p>
-                      <div className="border border-slate-800 rounded bg-slate-950/80 p-1.5 mb-1.5 text-[9px] space-y-0.5">
-                        <p className="text-slate-300"><span className="font-bold text-amber-500/90">Artemether/Lumefantrine:</span> Mu ni igba meji lojoojumọ.</p>
-                        <p className="text-slate-300"><span className="font-bold text-amber-500/90">Metformin:</span> Mu ni igba meji pẹlu ounjẹ.</p>
-                      </div>
-                      <p className="text-red-400/80 text-[8px] font-semibold">Tẹle itọnisọna dokita.</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* ── Desktop panels (side by side) ── */}
-                <div className="hidden md:grid md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Mode 1 */}
                   <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-3 text-[9px] leading-relaxed font-mono text-slate-300">
                     <div className="flex items-center gap-1.5 border-b border-slate-800 pb-1.5 mb-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-clinical-teal/60" />
@@ -186,6 +118,8 @@ export function HeroSection() {
                     </div>
                     <p className="text-red-400/90 font-bold text-[8px] uppercase tracking-wider">⚠ Red Flags: High fever, confusion.</p>
                   </div>
+
+                  {/* Mode 2 */}
                   <div className="rounded-lg border border-clinical-teal/20 bg-slate-900/80 p-3 text-[10px] leading-relaxed text-slate-200">
                     <div className="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-2">
                       <div className="flex items-center gap-1.5">
