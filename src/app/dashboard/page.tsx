@@ -29,6 +29,10 @@ function DashboardContent() {
   }, [view]);
 
   const navigate = useCallback((v: { name: string; id?: string }) => {
+    if (v.name === "output" && v.id) {
+      router.push(`/discharge/${v.id}`);
+      return;
+    }
     const params = new URLSearchParams();
     if (v.name !== "list") params.set("view", v.name);
     if (v.id) params.set("id", v.id);
