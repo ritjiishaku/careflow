@@ -60,14 +60,14 @@ BEGIN
   ) VALUES (
     p_patient_id, p_facility_id, p_facility_name, p_facility_code,
     p_ward_name, p_admission_date, p_discharge_date, p_patient_name,
-    p_age, p_gender, p_hospital_number, p_nhis_number, p_diagnosis,
-    p_treatment_given, p_procedures_performed, p_medications,
-    p_follow_up_instructions, p_additional_notes, p_language_requested,
+     p_age, p_gender::gender_enum, p_hospital_number, p_nhis_number, p_diagnosis,
+    p_treatment_given, ARRAY(SELECT jsonb_array_elements_text(p_procedures_performed)), p_medications,
+    p_follow_up_instructions, p_additional_notes, p_language_requested::language_enum,
     p_discharged_by, p_clinician_license_no
   );
 
   IF p_translation_confidence IS NOT NULL THEN
-    v_translation_confidence_enum := p_translation_confidence::translation_confidence_enum;
+    v_translation_confidence_enum := p_translation_confidence::confidence_enum;
   END IF;
 
   INSERT INTO discharge_records (
@@ -80,8 +80,9 @@ BEGIN
     p_record_id, p_patient_id, p_facility_id, NOW(),
     p_generated_by_user_id, p_prompt_version, p_model_version,
     p_clinical_summary, p_patient_friendly_output,
-    p_translated_output, p_translation_language, v_translation_confidence_enum,
-    p_missing_fields_log, p_flagged_issues, 'draft'
+    p_translated_output, p_translation_language::language_enum, v_translation_confidence_enum,
+    ARRAY(SELECT jsonb_array_elements_text(p_missing_fields_log)),
+    ARRAY(SELECT jsonb_array_elements_text(p_flagged_issues)), 'draft'
   );
 
   IF p_translation_target_language IS NOT NULL AND p_translation_target_language != 'en' AND p_translation_confidence != 'failed' THEN
@@ -91,7 +92,7 @@ BEGIN
       requested_at, completed_at
     ) VALUES (
       p_translation_request_id, p_record_id, p_translation_source_text,
-      p_translation_target_language, p_translated_output,
+      p_translation_target_language::language_enum, p_translated_output,
       v_translation_confidence_enum,
       CASE WHEN p_translation_confidence = 'low' THEN TRUE ELSE FALSE END,
       NOW(), NOW()
@@ -101,7 +102,7 @@ BEGIN
   INSERT INTO audit_logs (
     record_id, user_id, user_role, action, timestamp, facility_id
   ) VALUES (
-    p_record_id, p_generated_by_user_id, p_user_role, 'generate', NOW(), p_facility_id
+    p_record_id, p_generated_by_user_id, p_user_role::user_role_enum, 'generate'::audit_action_enum, NOW(), p_facility_id
   );
 
   RETURN p_record_id;
