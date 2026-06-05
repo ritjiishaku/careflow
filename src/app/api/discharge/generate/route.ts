@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
 
     if (rpcError) {
       return NextResponse.json(
-        apiError(ErrorCodes.SUPABASE_ERROR, { details: rpcError.message }),
+        { error: { message: `RPC error: ${rpcError.message}`, code: "SUPABASE_ERROR" } },
         { status: 500 },
       );
     }
