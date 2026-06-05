@@ -53,14 +53,8 @@ export async function POST(request: Request) {
 
     if (authError) {
       await supabase.from("facilities").delete().eq("facility_id", facility.facility_id);
-      if (authError.message.includes("already registered") || authError.message.includes("already exists")) {
-        return NextResponse.json(
-          { error: "An account with this email already exists." },
-          { status: 409 },
-        );
-      }
       return NextResponse.json(
-        { error: "Account could not be created. Please try again." },
+        { error: authError.message },
         { status: 500 },
       );
     }
