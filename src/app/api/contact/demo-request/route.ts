@@ -12,7 +12,6 @@ export async function POST(req: Request) {
     if (!fullName?.trim() || fullName.length > 200) errors.push("Valid full name is required.");
     if (!role?.trim()) errors.push("Role is required.");
     if (!facilityName?.trim()) errors.push("Facility name is required.");
-    if (!state?.trim()) errors.push("State is required.");
     if (!whatsappNumber?.trim()) errors.push("WhatsApp number is required.");
     else if (!isNigerianPhone(whatsappNumber.replace(/\s+/g, ""))) errors.push("WhatsApp number must be a valid Nigerian number (e.g. +2348031234567).");
     if (!email?.trim()) errors.push("Email is required.");
@@ -46,7 +45,7 @@ export async function POST(req: Request) {
         facility_name: facilityName.trim(),
         whatsapp_number: whatsappNumber.trim(),
         email: email.trim(),
-        state: state.trim(),
+        state: (state?.trim() || "Not specified"),
       });
 
     if (insertError) {

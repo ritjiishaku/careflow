@@ -13,7 +13,6 @@ interface DemoRequest {
   facility_name: string;
   whatsapp_number: string;
   email: string;
-  state: string;
   created_at: string;
 }
 
@@ -67,7 +66,6 @@ export default function DemoRequestsPage() {
                   <th scope="col" className="px-4 py-3 font-semibold text-deep-navy">Facility</th>
                   <th scope="col" className="px-4 py-3 font-semibold text-deep-navy">WhatsApp</th>
                   <th scope="col" className="px-4 py-3 font-semibold text-deep-navy">Email</th>
-                  <th scope="col" className="px-4 py-3 font-semibold text-deep-navy">State</th>
                   <th scope="col" className="px-4 py-3 font-semibold text-deep-navy">Date</th>
                 </tr>
               </thead>
@@ -79,7 +77,6 @@ export default function DemoRequestsPage() {
                     <td className="px-4 py-3 text-cool-grey">{r.facility_name}</td>
                     <td className="px-4 py-3 text-cool-grey">{r.whatsapp_number}</td>
                     <td className="px-4 py-3 text-cool-grey">{r.email}</td>
-                    <td className="px-4 py-3 text-cool-grey">{r.state}</td>
                     <td className="px-4 py-3 text-xs text-cool-grey font-mono">
                       {new Date(r.created_at).toLocaleDateString("en-NG")}
                     </td>
