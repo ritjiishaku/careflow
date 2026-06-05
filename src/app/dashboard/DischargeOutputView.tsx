@@ -48,9 +48,13 @@ export function DischargeOutputView({ id, onNavigate }: DischargeOutputViewProps
   const [editPatient, setEditPatient] = useState("");
   const [saving, setSaving] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<"finalise" | "archive" | null>(null);
+  const [confirmAction, setConfirmAction] = useState<"finalise" | "archive" | "unarchive" | null>(null);
   const [translateLang, setTranslateLang] = useState<string>("");
   const [translating, setTranslating] = useState(false);
+
+  useEffect(() => {
+    document.title = "CareFlow — Discharge Output";
+  }, []);
 
   useEffect(() => {
     async function fetchRecord() {
@@ -60,6 +64,7 @@ export function DischargeOutputView({ id, onNavigate }: DischargeOutputViewProps
         if (json.success) {
           const d = json.data;
           const pi = d.patient_input;
+          const name = pi?.patient_name ?? "";
           setRecord({
             recordId: d.record_id,
             clinicalSummary: d.clinical_summary,
@@ -70,11 +75,12 @@ export function DischargeOutputView({ id, onNavigate }: DischargeOutputViewProps
             missingFieldsLog: d.missing_fields_log,
             flaggedIssues: d.flagged_issues,
             status: d.status,
-            patientName: pi?.patient_name ?? "",
+            patientName: name,
             facilityName: pi?.facility_name ?? "",
             dischargeDate: pi?.discharge_date ?? "",
             dischargedBy: pi?.discharged_by ?? "",
           });
+          if (name) document.title = `CareFlow — ${name}`;
           setEditClinical(d.clinical_summary);
           setEditPatient(d.patient_friendly_output);
         } else {
@@ -134,6 +140,15 @@ export function DischargeOutputView({ id, onNavigate }: DischargeOutputViewProps
     setConfirmOpen(false); setConfirmAction(null);
   }
 
+  async function handleUnarchive() {
+    if (!record) return;
+    const res = await fetch(`/api/discharge/${record.recordId}/unarchive`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, userRole: role }) });
+    const json = await res.json();
+    if (json.success) { setRecord((prev) => prev ? { ...prev, status: "draft" } : prev); toast.success("Record unarchived"); }
+    else { toast.error(json.error?.message ?? "Failed to unarchive"); }
+    setConfirmOpen(false); setConfirmAction(null);
+  }
+
   async function handleTranslate() {
     if (!record) return;
     setTranslating(true);
@@ -188,6 +203,11 @@ export function DischargeOutputView({ id, onNavigate }: DischargeOutputViewProps
           {record.status !== "archived" && (role === "doctor" || role === "admin") && (
             <Button variant="outline" size="sm" className="touch-target-min text-red-500" onClick={() => { setConfirmAction("archive"); setConfirmOpen(true); }}>
               <Archive className="mr-1 h-4 w-4" />Archive
+            </Button>
+          )}
+          {record.status === "archived" && (role === "doctor" || role === "admin") && (
+            <Button variant="outline" size="sm" className="touch-target-min" onClick={() => { setConfirmAction("unarchive"); setConfirmOpen(true); }}>
+              <Archive className="mr-1 h-4 w-4" />Unarchive
             </Button>
           )}
           {isEditing && (
@@ -254,7 +274,15 @@ export function DischargeOutputView({ id, onNavigate }: DischargeOutputViewProps
         {record.translatedOutput && <TranslationPanel content={record.translatedOutput} language={record.translationLanguage ?? null} confidence={record.translationConfidence ?? null} />}
       </div>
 
-      <ConfirmModal open={confirmOpen} onOpenChange={setConfirmOpen} title={confirmAction === "finalise" ? "Finalise Discharge Record?" : "Archive Discharge Record?"} description={confirmAction === "finalise" ? "This will mark the record as finalised. Only a Doctor can undo this action." : "Archived records cannot be unarchived."} confirmLabel={confirmAction === "finalise" ? "Finalise" : "Archive"} variant={confirmAction === "archive" ? "destructive" : "default"} onConfirm={confirmAction === "finalise" ? handleFinalise : handleArchive} />
+      <ConfirmModal
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={confirmAction === "finalise" ? "Finalise Discharge Record?" : confirmAction === "archive" ? "Archive Discharge Record?" : "Unarchive Discharge Record?"}
+        description={confirmAction === "finalise" ? "This will mark the record as finalised. Only a Doctor can undo this action." : confirmAction === "archive" ? "Archived records can be unarchived later." : "This will return the record to draft status."}
+        confirmLabel={confirmAction === "finalise" ? "Finalise" : confirmAction === "archive" ? "Archive" : "Unarchive"}
+        variant={confirmAction === "archive" ? "destructive" : "default"}
+        onConfirm={confirmAction === "finalise" ? handleFinalise : confirmAction === "archive" ? handleArchive : handleUnarchive}
+      />
     </div>
   );
 }

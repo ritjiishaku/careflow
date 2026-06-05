@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback } from "react";
+import { Suspense, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { DashboardList } from "./DashboardList";
@@ -17,6 +17,16 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const view = searchParams.get("view") || "list";
   const id = searchParams.get("id") || "";
+
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      list: "CareFlow — Dashboard",
+      new: "CareFlow — New Discharge",
+      output: "CareFlow — Discharge Output",
+      detail: "CareFlow — Record Detail",
+    };
+    document.title = titles[view] ?? "CareFlow";
+  }, [view]);
 
   const navigate = useCallback((v: { name: string; id?: string }) => {
     const params = new URLSearchParams();

@@ -48,8 +48,9 @@ export function NewDischargeView({ onNavigate }: NewDischargeViewProps) {
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4 pb-20 sm:p-6 sm:pb-6">
       <div className="flex items-center gap-4">
-        <button type="button" onClick={() => onNavigate({ name: "list" })} className="touch-target-min flex items-center justify-center h-9 w-9 rounded-lg border border-slate/20 bg-white text-cool-grey hover:text-deep-navy hover:border-slate/30 transition-all shadow-sm">
+        <button type="button" onClick={() => onNavigate({ name: "list" })} className="touch-target-min inline-flex items-center gap-1.5 text-sm text-cool-grey hover:text-deep-navy transition-colors">
           <ArrowLeft className="h-4 w-4" />
+          Back to Dashboard
         </button>
         <div>
           <h1 className="text-xl font-bold text-deep-navy sm:text-2xl">New Discharge Record</h1>
