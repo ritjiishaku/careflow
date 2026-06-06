@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/services/supabase-server";
 import { auth } from "@/lib/auth";
 import { UserRole } from "@/types/schemas";
+import { apiError, ErrorCodes } from "@/lib/error-codes";
 
 export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id || session?.user?.role !== UserRole.Admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      return NextResponse.json(apiError(ErrorCodes.ROLE_NOT_PERMITTED), { status: 403 });
     }
 
     const supabase = createServiceClient();
@@ -20,6 +21,6 @@ export async function GET() {
 
     return NextResponse.json({ success: true, data: data ?? [] });
   } catch {
-    return NextResponse.json({ error: "Failed to load demo requests" }, { status: 500 });
+    return NextResponse.json(apiError(ErrorCodes.SUPABASE_ERROR, { operation: "SELECT demo_requests" }), { status: 500 });
   }
 }

@@ -19,7 +19,7 @@ export async function POST(request: Request) {
 
     if (!url || !key) {
       return NextResponse.json(
-        { error: "Server configuration error. Contact support." },
+        apiError(ErrorCodes.INTERNAL_SERVER_ERROR, { details: "Server configuration error. Contact support." }),
         { status: 500 },
       );
     }
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
       return NextResponse.json(
-        { error: firstIssue.message },
+        apiError(ErrorCodes.VALIDATION_ERROR, { field: firstIssue.path.join("."), message: firstIssue.message }),
         { status: 400 },
       );
     }
@@ -51,12 +51,12 @@ export async function POST(request: Request) {
     if (authError) {
       if (authError.message.includes("already registered") || authError.message.includes("already exists")) {
         return NextResponse.json(
-          { error: "An account with this email already exists." },
+          apiError(ErrorCodes.SUPABASE_ERROR, { details: "An account with this email already exists." }),
           { status: 409 },
         );
       }
       return NextResponse.json(
-        { error: "An account could not be created. Please try again." },
+        apiError(ErrorCodes.SUPABASE_ERROR, { operation: "CREATE user" }),
         { status: 500 },
       );
     }
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     if (profileError) {
       await supabase.auth.admin.deleteUser(userId).catch(() => {});
       return NextResponse.json(
-        { error: "Account could not be fully created. Please try again." },
+        apiError(ErrorCodes.SUPABASE_ERROR, { operation: "UPSERT user_profile" }),
         { status: 500 },
       );
     }
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {
     return NextResponse.json(
-      { error: "An unexpected error occurred. Please try again." },
+      apiError(ErrorCodes.INTERNAL_SERVER_ERROR),
       { status: 500 },
     );
   }

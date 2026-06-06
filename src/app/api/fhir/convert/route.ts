@@ -7,15 +7,22 @@ import {
   fhirProcedures,
   fhirDischargeSummary,
 } from "@/services/fhir-adapter";
+import { auth } from "@/lib/auth";
+import { apiError, ErrorCodes } from "@/lib/error-codes";
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(apiError(ErrorCodes.UNAUTHORIZED), { status: 401 });
+    }
+
     const body = await request.json();
     const { input, clinicalSummary, recordId } = body;
 
     if (!input) {
       return NextResponse.json(
-        { success: false, error: { code: "MISSING_INPUT", message: "PatientInput data is required." } },
+        apiError(ErrorCodes.MISSING_REQUIRED_FIELD, { field: "input" }),
         { status: 400 },
       );
     }
@@ -51,7 +58,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, data: bundle });
   } catch {
     return NextResponse.json(
-      { success: false, error: { code: "CONVERSION_FAILED", message: "FHIR conversion failed." } },
+      apiError(ErrorCodes.INTERNAL_SERVER_ERROR, { details: "FHIR conversion failed." }),
       { status: 500 },
     );
   }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/services/supabase-server";
 import { isNigerianPhone, isValidEmail } from "@/lib/validations";
+import { apiError, ErrorCodes } from "@/lib/error-codes";
 
 export async function POST(req: Request) {
   try {
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
     else if (!isValidEmail(email.trim())) errors.push("Valid email is required.");
 
     if (errors.length > 0) {
-      return NextResponse.json({ error: errors.join(" ") }, { status: 400 });
+      return NextResponse.json(apiError(ErrorCodes.VALIDATION_ERROR, { fields: errors }), { status: 400 });
     }
 
     const supabase = createServiceClient();
@@ -30,11 +31,11 @@ export async function POST(req: Request) {
       .gte("created_at", new Date(Date.now() - 10 * 60 * 1000).toISOString());
 
     if (countError) {
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return NextResponse.json(apiError(ErrorCodes.SUPABASE_ERROR, { operation: "COUNT demo_requests" }), { status: 500 });
     }
 
     if (count && count > 0) {
-      return NextResponse.json({ error: "You already submitted a request recently. We will contact you shortly." }, { status: 429 });
+      return NextResponse.json(apiError(ErrorCodes.RATE_LIMITED, { details: "You already submitted a request recently. We will contact you shortly." }), { status: 429 });
     }
 
     const { error: insertError } = await supabase
@@ -49,11 +50,11 @@ export async function POST(req: Request) {
       });
 
     if (insertError) {
-      return NextResponse.json({ error: "Database insertion failed" }, { status: 500 });
+      return NextResponse.json(apiError(ErrorCodes.SUPABASE_ERROR, { operation: "INSERT demo_requests" }), { status: 500 });
     }
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(apiError(ErrorCodes.INTERNAL_SERVER_ERROR), { status: 500 });
   }
 }

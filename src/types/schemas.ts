@@ -29,6 +29,7 @@ export enum AuditAction {
   View = "view",
   Finalise = "finalise",
   Archive = "archive",
+  Unarchive = "unarchive",
   Print = "print",
   Export = "export",
 }

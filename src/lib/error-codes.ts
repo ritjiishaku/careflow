@@ -14,6 +14,9 @@ export const ErrorCodes = {
   DEEPSEEK_RATE_LIMITED: "DEEPSEEK_RATE_LIMITED",
   DEEPSEEK_AUTH_FAILED: "DEEPSEEK_AUTH_FAILED",
   INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
+  RATE_LIMITED: "RATE_LIMITED",
+  RECORD_NOT_ARCHIVED: "RECORD_NOT_ARCHIVED",
+  VALIDATION_ERROR: "VALIDATION_ERROR",
 } as const;
 
 export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];
@@ -34,6 +37,9 @@ export const HttpStatus: Record<ErrorCode, number> = {
   [ErrorCodes.DEEPSEEK_RATE_LIMITED]: 429,
   [ErrorCodes.DEEPSEEK_AUTH_FAILED]: 500,
   [ErrorCodes.INTERNAL_SERVER_ERROR]: 500,
+  [ErrorCodes.RATE_LIMITED]: 429,
+  [ErrorCodes.RECORD_NOT_ARCHIVED]: 400,
+  [ErrorCodes.VALIDATION_ERROR]: 400,
 };
 
 export const ErrorMessages: Record<ErrorCode, string> = {
@@ -52,6 +58,9 @@ export const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCodes.DEEPSEEK_RATE_LIMITED]: "AI service rate limited. Please wait and try again.",
   [ErrorCodes.DEEPSEEK_AUTH_FAILED]: "AI service authentication failed. Contact support.",
   [ErrorCodes.INTERNAL_SERVER_ERROR]: "An unexpected error occurred. Please try again.",
+  [ErrorCodes.RATE_LIMITED]: "Too many requests. Please try again later.",
+  [ErrorCodes.RECORD_NOT_ARCHIVED]: "Only archived records can be unarchived.",
+  [ErrorCodes.VALIDATION_ERROR]: "Validation failed. Please check your input.",
 };
 
 export interface ApiErrorResponse {

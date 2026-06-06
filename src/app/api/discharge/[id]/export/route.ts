@@ -10,71 +10,79 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth();
-  if (!session?.user?.id || !session?.user?.role) {
-    return NextResponse.json(apiError(ErrorCodes.UNAUTHORIZED), { status: 401 });
-  }
+  try {
+    const session = await auth();
+    if (!session?.user?.id || !session?.user?.role) {
+      return NextResponse.json(apiError(ErrorCodes.UNAUTHORIZED), { status: 401 });
+    }
 
-  const role = session.user.role;
-  if (role !== UserRole.Doctor && role !== UserRole.Nurse) {
-    return NextResponse.json(apiError(ErrorCodes.ROLE_NOT_PERMITTED), { status: 403 });
-  }
+    const role = session.user.role;
+    if (role !== UserRole.Doctor && role !== UserRole.Nurse) {
+      return NextResponse.json(apiError(ErrorCodes.ROLE_NOT_PERMITTED), { status: 403 });
+    }
 
-  const { id } = await params;
+    const { id } = await params;
 
-  const access = await verifyFacilityAccess(id, session.user.facilityId);
-  if (!access.allowed) {
+    const access = await verifyFacilityAccess(id, session.user.facilityId);
+    if (!access.allowed) {
+      return NextResponse.json(
+        apiError(ErrorCodes.RECORD_NOT_FOUND, { recordId: id }),
+        { status: 404 },
+      );
+    }
+
+    const supabase = createServiceClient();
+
+    const { data, error } = await supabase
+      .from("discharge_records")
+      .select(`*, patient_input:patient_input_id (
+        patient_name, facility_name, discharge_date, discharged_by
+      )`)
+      .eq("record_id", id)
+      .single();
+
+    if (error || !data) {
+      return NextResponse.json(
+        apiError(ErrorCodes.RECORD_NOT_FOUND, { recordId: id }),
+        { status: 404 },
+      );
+    }
+
+    if (data.status !== "finalised") {
+      return NextResponse.json(
+        apiError(ErrorCodes.RECORD_NOT_FINALISED, { action: "export", currentStatus: data.status }),
+        { status: 400 },
+      );
+    }
+
+    const pi = data.patient_input as Record<string, unknown> | undefined;
+
+    const exportData = {
+      facilityName: pi?.facility_name ?? "",
+      patientName: pi?.patient_name ?? "",
+      dischargeDate: pi?.discharge_date ?? "",
+      clinicianName: pi?.discharged_by ?? "",
+      clinicalSummary: data.clinical_summary,
+      patientFriendlyOutput: data.patient_friendly_output,
+      translatedOutput: data.translated_output,
+      translationLanguage: data.translation_language,
+    };
+
+    await writeAuditLog({
+      recordId: id,
+      userId: session.user.id,
+      userRole: role as any,
+      action: AuditAction.Export,
+      facilityId: session.user.facilityId,
+      ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
+    });
+
+    return NextResponse.json({ success: true, data: exportData });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "INTERNAL_SERVER_ERROR";
     return NextResponse.json(
-      apiError(ErrorCodes.RECORD_NOT_FOUND, { recordId: id }),
-      { status: 404 },
+      apiError(ErrorCodes.SUPABASE_ERROR, { operation: "GET discharge_record export", details: message }),
+      { status: 500 },
     );
   }
-
-  const supabase = createServiceClient();
-
-  const { data, error } = await supabase
-    .from("discharge_records")
-    .select(`*, patient_input:patient_input_id (
-      patient_name, facility_name, discharge_date, discharged_by
-    )`)
-    .eq("record_id", id)
-    .single();
-
-  if (error || !data) {
-    return NextResponse.json(
-      apiError(ErrorCodes.RECORD_NOT_FOUND, { recordId: id }),
-      { status: 404 },
-    );
-  }
-
-  if (data.status !== "finalised") {
-    return NextResponse.json(
-      apiError(ErrorCodes.RECORD_NOT_FINALISED, { action: "export", currentStatus: data.status }),
-      { status: 400 },
-    );
-  }
-
-  const pi = data.patient_input as Record<string, unknown> | undefined;
-
-  const exportData = {
-    facilityName: pi?.facility_name ?? "",
-    patientName: pi?.patient_name ?? "",
-    dischargeDate: pi?.discharge_date ?? "",
-    clinicianName: pi?.discharged_by ?? "",
-    clinicalSummary: data.clinical_summary,
-    patientFriendlyOutput: data.patient_friendly_output,
-    translatedOutput: data.translated_output,
-    translationLanguage: data.translation_language,
-  };
-
-  await writeAuditLog({
-    recordId: id,
-    userId: session.user.id,
-    userRole: role as any,
-    action: AuditAction.Export,
-    facilityId: session.user.facilityId,
-    ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
-  });
-
-  return NextResponse.json({ success: true, data: exportData });
 }

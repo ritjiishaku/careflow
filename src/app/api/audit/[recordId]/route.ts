@@ -8,25 +8,25 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ recordId: string }> },
 ) {
-  const session = await auth();
-  if (!session?.user?.id || !session?.user?.role) {
-    return NextResponse.json(apiError(ErrorCodes.UNAUTHORIZED), { status: 401 });
-  }
-
-  if (session.user.role !== UserRole.Admin) {
-    return NextResponse.json(
-      apiError(ErrorCodes.ROLE_NOT_PERMITTED, { requiredRole: "admin" }),
-      { status: 403 },
-    );
-  }
-
-  const { recordId } = await params;
-
-  const { searchParams } = new URL(request.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-  const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
-
   try {
+    const session = await auth();
+    if (!session?.user?.id || !session?.user?.role) {
+      return NextResponse.json(apiError(ErrorCodes.UNAUTHORIZED), { status: 401 });
+    }
+
+    if (session.user.role !== UserRole.Admin) {
+      return NextResponse.json(
+        apiError(ErrorCodes.ROLE_NOT_PERMITTED, { requiredRole: "admin" }),
+        { status: 403 },
+      );
+    }
+
+    const { recordId } = await params;
+
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+
     const { logs, total } = await getAuditLogs(recordId, { page, limit });
     return NextResponse.json({
       success: true,

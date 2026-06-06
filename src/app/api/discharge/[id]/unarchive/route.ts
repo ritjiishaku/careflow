@@ -48,7 +48,7 @@ export async function POST(
 
     if (existing.status !== "archived") {
       return NextResponse.json(
-        { success: false, error: { message: "Only archived records can be unarchived.", code: "RECORD_NOT_ARCHIVED" } },
+        apiError(ErrorCodes.RECORD_NOT_ARCHIVED),
         { status: 400 },
       );
     }
@@ -69,7 +69,7 @@ export async function POST(
       recordId: id,
       userId: session.user.id,
       userRole: role as any,
-      action: AuditAction.Archive,
+      action: AuditAction.Unarchive,
       facilityId: session.user.facilityId,
       ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
       notes: `Status changed: ${existing.status} → draft (unarchived)`,

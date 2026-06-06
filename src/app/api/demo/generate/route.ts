@@ -1,30 +1,33 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/services/supabase-server";
 import { generateDischarge, getPromptVersion, getModelVersion } from "@/services/ai-provider";
-
-// Simple in-memory rate limiter
-const rateLimitMap = new Map<string, number>();
-const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
+import { apiError, ErrorCodes } from "@/lib/error-codes";
 
 export async function POST(req: Request) {
-  const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
-  const now = Date.now();
-  const lastRequest = rateLimitMap.get(ip);
-
-  if (lastRequest && now - lastRequest < RATE_LIMIT_WINDOW) {
-    return NextResponse.json(
-      { error: "Too many requests. Please try again in an hour." },
-      { status: 429 }
-    );
-  }
-
   try {
     const patientInput = await req.json();
+    const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+
+    const supabase = createServiceClient();
+    const windowStart = new Date(Date.now() - 3600000).toISOString();
+    const { count } = await supabase
+      .from("rate_limits")
+      .select("*", { count: "exact", head: true })
+      .eq("identifier", ip)
+      .eq("action_type", "demo_generate")
+      .gte("created_at", windowStart);
+
+    if (count && count >= 1) {
+      return NextResponse.json(
+        apiError(ErrorCodes.RATE_LIMITED),
+        { status: 429 }
+      );
+    }
 
     const required = ["facilityName", "admissionDate", "dischargeDate", "patientName", "age", "gender", "hospitalNumber", "diagnosis", "treatmentGiven", "medications", "dischargedBy"];
     for (const field of required) {
       if (patientInput[field] === undefined || patientInput[field] === null || patientInput[field] === "") {
-        return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 });
+        return NextResponse.json(apiError(ErrorCodes.MISSING_REQUIRED_FIELD, { field }), { status: 400 });
       }
     }
 
@@ -32,7 +35,6 @@ export async function POST(req: Request) {
     const result = await generateDischarge(patientInput);
 
     // Save to database
-    const supabase = createServiceClient();
     const patientId = crypto.randomUUID();
     const recordId = crypto.randomUUID();
 
@@ -63,8 +65,11 @@ export async function POST(req: Request) {
       status: "draft",
     }).throwOnError();
 
-    // Save timestamp for rate limit
-    rateLimitMap.set(ip, now);
+    await supabase.from("rate_limits").insert({
+      identifier: ip,
+      action_type: "demo_generate",
+      created_at: new Date().toISOString(),
+    });
 
     return NextResponse.json({
       recordId,
@@ -74,7 +79,7 @@ export async function POST(req: Request) {
   } catch (err: unknown) {
     console.error("Demo generation error:", err);
     return NextResponse.json(
-      { error: "Generation failed" },
+      apiError(ErrorCodes.GENERATION_FAILED),
       { status: 500 }
     );
   }

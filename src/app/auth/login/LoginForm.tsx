@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,9 +34,7 @@ function Field({ label, id, children }: { label: string; id: string; children: R
 export function LoginForm({ onSwitchToForgotPassword }: LoginFormProps = {}) {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { data: session } = useSession();
-  const callbackUrl = searchParams.get("callbackUrl");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,10 +44,10 @@ export function LoginForm({ onSwitchToForgotPassword }: LoginFormProps = {}) {
   useEffect(() => {
     if (session?.user) {
       const user = session.user as { role?: string };
-      const dest = callbackUrl || (user.role === "admin" ? "/admin" : "/dashboard");
+      const dest = user.role === "admin" ? "/admin" : "/dashboard";
       router.push(dest);
     }
-  }, [session, callbackUrl, router]);
+  }, [session, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

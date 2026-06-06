@@ -112,6 +112,8 @@ export function DischargeOutputView({ id, onNavigate }: DischargeOutputViewProps
       } else {
         toast.error(json.error?.message ?? "Failed to save changes");
       }
+    } catch {
+      toast.error("Failed to save changes");
     } finally {
       setSaving(false);
     }
@@ -124,29 +126,44 @@ export function DischargeOutputView({ id, onNavigate }: DischargeOutputViewProps
 
   async function handleFinalise() {
     if (!record) return;
-    const res = await fetch(`/api/discharge/${record.recordId}/finalise`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, userRole: role }) });
-    const json = await res.json();
-    if (json.success) { setRecord((prev) => prev ? { ...prev, status: "finalised" } : prev); toast.success("Record finalised"); }
-    else { toast.error(json.error?.message ?? "Failed to finalise"); }
-    setConfirmOpen(false); setConfirmAction(null);
+    try {
+      const res = await fetch(`/api/discharge/${record.recordId}/finalise`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, userRole: role }) });
+      const json = await res.json();
+      if (json.success) { setRecord((prev) => prev ? { ...prev, status: "finalised" } : prev); toast.success("Record finalised"); }
+      else { toast.error(json.error?.message ?? "Failed to finalise"); }
+    } catch {
+      toast.error("Failed to finalise record");
+    } finally {
+      setConfirmOpen(false); setConfirmAction(null);
+    }
   }
 
   async function handleArchive() {
     if (!record) return;
-    const res = await fetch(`/api/discharge/${record.recordId}/archive`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, userRole: role }) });
-    const json = await res.json();
-    if (json.success) { setRecord((prev) => prev ? { ...prev, status: "archived" } : prev); toast.success("Record archived"); }
-    else { toast.error(json.error?.message ?? "Failed to archive"); }
-    setConfirmOpen(false); setConfirmAction(null);
+    try {
+      const res = await fetch(`/api/discharge/${record.recordId}/archive`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, userRole: role }) });
+      const json = await res.json();
+      if (json.success) { setRecord((prev) => prev ? { ...prev, status: "archived" } : prev); toast.success("Record archived"); }
+      else { toast.error(json.error?.message ?? "Failed to archive"); }
+    } catch {
+      toast.error("Failed to archive record");
+    } finally {
+      setConfirmOpen(false); setConfirmAction(null);
+    }
   }
 
   async function handleUnarchive() {
     if (!record) return;
-    const res = await fetch(`/api/discharge/${record.recordId}/unarchive`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, userRole: role }) });
-    const json = await res.json();
-    if (json.success) { setRecord((prev) => prev ? { ...prev, status: "draft" } : prev); toast.success("Record unarchived"); }
-    else { toast.error(json.error?.message ?? "Failed to unarchive"); }
-    setConfirmOpen(false); setConfirmAction(null);
+    try {
+      const res = await fetch(`/api/discharge/${record.recordId}/unarchive`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, userRole: role }) });
+      const json = await res.json();
+      if (json.success) { setRecord((prev) => prev ? { ...prev, status: "draft" } : prev); toast.success("Record unarchived"); }
+      else { toast.error(json.error?.message ?? "Failed to unarchive"); }
+    } catch {
+      toast.error("Failed to unarchive record");
+    } finally {
+      setConfirmOpen(false); setConfirmAction(null);
+    }
   }
 
   async function handleTranslate() {
@@ -158,6 +175,8 @@ export function DischargeOutputView({ id, onNavigate }: DischargeOutputViewProps
       if (json.success) {
         setRecord((prev) => prev ? { ...prev, translatedOutput: json.data.translatedOutput, translationLanguage: json.data.translationLanguage, translationConfidence: json.data.confidence } : prev);
       }
+    } catch {
+      toast.error("Translation request failed");
     } finally { setTranslating(false); }
   }
 

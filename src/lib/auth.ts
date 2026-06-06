@@ -1,4 +1,3 @@
-import "server-only";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { createClient } from "@supabase/supabase-js";
@@ -18,34 +17,45 @@ declare module "@auth/core/types" {
   }
 }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
+function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set",
+    );
+  }
+  return createClient(url, key, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
-  },
-);
+  });
+}
 
-const RATE_LIMIT_WINDOW = 10 * 60 * 1000;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
-const loginAttempts = new Map<string, { count: number; resetAt: number }>();
 
-function isRateLimited(email: string): boolean {
-  const now = Date.now();
-  const record = loginAttempts.get(email);
+async function isRateLimited(email: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
+  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
 
-  if (!record || now > record.resetAt) {
-    loginAttempts.set(email, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
-    return false;
-  }
+  const { count } = await supabase
+    .from("rate_limits")
+    .select("*", { count: "exact", head: true })
+    .eq("identifier", email)
+    .eq("action_type", "login")
+    .gte("created_at", windowStart);
 
-  record.count++;
-  if (record.count > RATE_LIMIT_MAX) {
+  if (count && count >= RATE_LIMIT_MAX) {
     return true;
   }
+
+  await supabase.from("rate_limits").insert({
+    identifier: email,
+    action_type: "login",
+    created_at: new Date().toISOString(),
+  });
 
   return false;
 }
@@ -66,9 +76,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        if (isRateLimited(email)) {
+        if (await isRateLimited(email)) {
           throw new Error("RATE_LIMITED");
         }
+
+        const supabase = getSupabaseClient();
 
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
@@ -125,6 +137,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
     maxAge: 8 * 60 * 60,
   },
+  trustHost: true,
   pages: {
     signIn: "/auth",
   },

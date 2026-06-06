@@ -2,7 +2,6 @@ const requiredServerVars = [
   "SUPABASE_SERVICE_ROLE_KEY",
   "DEEPSEEK_API_KEY",
   "NEXTAUTH_SECRET",
-  "NEXTAUTH_URL",
 ];
 
 const requiredPublicVars = [

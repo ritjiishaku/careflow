@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/services/supabase-server";
 import { facilityRegisterSchema } from "@/lib/validations";
+import { apiError, ErrorCodes } from "@/lib/error-codes";
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
       return NextResponse.json(
-        { error: firstIssue.message },
+        apiError(ErrorCodes.VALIDATION_ERROR, { field: firstIssue.path.join("."), message: firstIssue.message }),
         { status: 400 },
       );
     }
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
 
     if ((recentCount.count ?? 0) >= 10) {
       return NextResponse.json(
-        { error: "Too many facilities registered recently. Please try again later." },
+        apiError(ErrorCodes.RATE_LIMITED),
         { status: 429 },
       );
     }
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
 
     if (facilityError) {
       return NextResponse.json(
-        { error: "Could not create facility. Please try again." },
+        apiError(ErrorCodes.SUPABASE_ERROR, { operation: "INSERT facility" }),
         { status: 500 },
       );
     }
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
     if (authError) {
       await supabase.from("facilities").delete().eq("facility_id", facility.facility_id);
       return NextResponse.json(
-        { error: authError.message },
+        apiError(ErrorCodes.SUPABASE_ERROR, { operation: "CREATE user", details: authError.message }),
         { status: 500 },
       );
     }
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
       await supabase.auth.admin.deleteUser(userId).catch(() => {});
       await supabase.from("facilities").delete().eq("facility_id", facility.facility_id);
       return NextResponse.json(
-        { error: "Account could not be fully created. Please try again." },
+        apiError(ErrorCodes.SUPABASE_ERROR, { operation: "UPSERT user_profile" }),
         { status: 500 },
       );
     }
@@ -85,7 +86,7 @@ export async function POST(request: Request) {
     }, { status: 201 });
   } catch (err) {
     return NextResponse.json(
-      { error: "An unexpected error occurred. Please try again." },
+      apiError(ErrorCodes.INTERNAL_SERVER_ERROR),
       { status: 500 },
     );
   }
