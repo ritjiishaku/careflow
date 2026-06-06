@@ -41,7 +41,13 @@ CareFlow solves this by providing a structured form that clinicians fill in, the
 | Role-based access (Doctor / Nurse / Admin) | ✅ |
 | Audit log (immutable, paginated) | ✅ |
 | Offline draft caching | ✅ |
+| Server-side draft persistence | ✅ |
 | Rate-limited login (5 attempts / 10 min) | ✅ |
+| Supabase-backed rate limiting (all endpoints) | ✅ |
+| Bundle-optimised lazy-loaded form | ✅ |
+| PDF export (@react-pdf/renderer) | ✅ |
+| FHIR conversion endpoint | ✅ |
+| Unarchive action | ✅ |
 
 ### Guardrails
 
@@ -57,26 +63,27 @@ CareFlow solves this by providing a structured form that clinicians fill in, the
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Next.js 16 (App Router)               │
-│  ┌─────────────┐  ┌──────────────┐  ┌────────────────┐  │
-│  │  Input Form  │  │  AI Engine   │  │  Output/Delivery│  │
-│  │  (Patient)   │→ │  (DeepSeek)  │→ │  (View/Print/  │  │
-│  │              │  │              │  │   Share/Export)│  │
-│  └─────────────┘  └──────────────┘  └────────────────┘  │
-│         │                │                  │            │
-│         ▼                ▼                  ▼            │
-│  ┌─────────────────────────────────────────────────────┐ │
-│  │              Supabase (PostgreSQL)                   │ │
-│  │  patient_inputs → discharge_records → audit_logs    │ │
-│  │               translation_requests                   │ │
-│  └─────────────────────────────────────────────────────┘ │
-│         │                                                │
-│  ┌──────┴──────┐  ┌──────────┐  ┌──────────────────┐    │
-│  │ NextAuth v5 │  │ RoleGate │  │ RLS (Row-Level   │    │
-│  │ (JWT)       │  │ (RBAC)   │  │  Security)       │    │
-│  └─────────────┘  └──────────┘  └──────────────────┘    │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    Next.js 16 (App Router)                   │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐   │
+│  │  Input Form   │  │  AI Engine   │  │  Output/Delivery  │   │
+│  │  (Patient)    │→ │  (DeepSeek)  │→ │  (View/Print/    │   │
+│  │  + Drafts     │  │              │  │   Share/Export/  │   │
+│  │               │  │              │  │   PDF)           │   │
+│  └──────────────┘  └──────────────┘  └──────────────────┘   │
+│         │                │                  │                │
+│         ▼                ▼                  ▼                │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │              Supabase (PostgreSQL)                       │ │
+│  │  patient_inputs → discharge_records → audit_logs       │ │
+│  │  translation_requests → rate_limits → form_drafts      │ │
+│  └─────────────────────────────────────────────────────────┘ │
+│         │                                                    │
+│  ┌──────┴──────┐  ┌──────────┐  ┌──────────────────────┐    │
+│  │ proxy.ts    │  │ RoleGate │  │ RLS (Row-Level        │    │
+│  │ (middleware)│  │ (RBAC)   │  │  Security)            │    │
+│  └─────────────┘  └──────────┘  └──────────────────────┘    │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ### Three-Layer Architecture
@@ -171,7 +178,7 @@ DEEPSEEK_TIMEOUT_MS=25000
 
 # NextAuth
 AUTH_SECRET=<generated-hex-string>
-NEXTAUTH_URL=http://localhost:3000
+AUTH_TRUST_HOST=true
 
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -197,30 +204,48 @@ After running `supabase db reset`, the following accounts are available:
 src/
 ├── app/
 │   ├── api/
-│   │   ├── auth/[...nextauth]/route.ts    # NextAuth handler
-│   │   ├── audit/[recordId]/route.ts      # Audit log API (Admin)
+│   │   ├── admin/
+│   │   │   ├── clinicians/               # Clinician management (Admin)
+│   │   │   ├── compliance/               # Compliance dashboard (Admin)
+│   │   │   └── demo-requests/            # Demo request list (Admin)
+│   │   ├── audit/[recordId]/route.ts     # Audit log API (Admin)
+│   │   ├── auth/
+│   │   │   ├── [...nextauth]/route.ts    # NextAuth handler
+│   │   │   └── forgot-password/route.ts  # Password reset
+│   │   ├── contact/demo-request/route.ts # Public demo request
+│   │   ├── dashboard/metrics/route.ts    # Dashboard metrics
+│   │   ├── demo/generate/route.ts        # Demo AI generation
 │   │   ├── discharge/
-│   │   │   ├── route.ts                   # List records
-│   │   │   ├── [id]/route.ts              # GET/PUT record
-│   │   │   ├── [id]/finalise/route.ts     # Finalise (Doctor)
-│   │   │   ├── [id]/archive/route.ts      # Archive (Doctor/Admin)
-│   │   │   ├── [id]/export/route.ts       # Export data
-│   │   │   └── generate/route.ts          # AI generation
-│   │   ├── health/route.ts                # Health check
-│   │   └── translation/request/route.ts   # Translation API
-│   ├── audit/[recordId]/page.tsx          # Audit log page
-│   ├── auth/login/page.tsx                # Login page
-│   ├── dashboard/page.tsx                 # Dashboard
-│   ├── discharge/
-│   │   ├── new/page.tsx                   # New discharge form
-│   │   ├── [id]/page.tsx                  # Record detail
-│   │   └── [id]/output/page.tsx           # Output viewer
+│   │   │   ├── route.ts                  # List records
+│   │   │   ├── [id]/route.ts             # GET/PUT record
+│   │   │   ├── [id]/archive/route.ts     # Archive (Doctor/Admin)
+│   │   │   ├── [id]/export/route.ts      # Export data (JSON/PDF)
+│   │   │   ├── [id]/finalise/route.ts    # Finalise (Doctor)
+│   │   │   ├── [id]/unarchive/route.ts   # Unarchive (Doctor/Admin)
+│   │   │   ├── draft/route.ts            # Server-side draft persistence
+│   │   │   └── generate/route.ts         # AI generation
+│   │   ├── facilities/                   # Facility registry
+│   │   ├── fhir/convert/route.ts         # FHIR conversion
+│   │   ├── health/route.ts               # Health check
+│   │   └── translation/request/route.ts  # Translation API
+│   ├── admin/                            # Admin pages
+│   ├── audit/                            # Audit log pages
+│   ├── auth/
+│   │   ├── page.tsx                      # Login page
+│   │   └── login/LoginForm.tsx           # Login form component
+│   ├── contact/                          # Contact/demo page
+│   ├── dashboard/
+│   │   ├── NewDischargeView.tsx           # Lazy-loaded form wrapper
+│   │   ├── DischargeOutputView.tsx        # Discharge output viewer
+│   │   ├── RecordList.tsx                 # Record list/tiles
+│   │   └── page.tsx                       # Dashboard page
+│   ├── discharge/[id]/page.tsx            # Record detail
 │   ├── settings/page.tsx                  # Settings
 │   ├── layout.tsx                         # Root layout
 │   └── page.tsx                           # Landing page
 ├── components/
 │   ├── forms/
-│   │   ├── PatientInputForm.tsx           # 19-field form
+│   │   ├── PatientInputForm.tsx           # 19-field form (lazy-loaded)
 │   │   ├── MedicationRow.tsx              # Medication sub-form
 │   │   └── LanguageSelector.tsx           # Language picker
 │   ├── layout/
@@ -234,6 +259,8 @@ src/
 │   │   ├── TranslationPanel.tsx           # Translation display
 │   │   ├── MissingFieldsBanner.tsx        # Missing fields warning
 │   │   └── FlaggedIssuesBanner.tsx        # Issues warning
+│   ├── pdf/
+│   │   └── DischargePdf.tsx              # @react-pdf/renderer doc
 │   ├── shared/
 │   │   ├── StatusBadge.tsx                # Draft/Finalised/Archived
 │   │   ├── AuditLogTable.tsx              # Paginated audit table
@@ -243,13 +270,10 @@ src/
 │   │   ├── OfflineBanner.tsx              # Offline indicator
 │   │   └── LoadingSpinner.tsx             # Loading indicator
 │   └── ui/                               # shadcn/ui components
-├── hooks/
-│   ├── useOfflineDraft.ts                 # Offline form caching
-│   └── useRole.ts                         # Session role reader
 ├── lib/
-│   ├── auth.ts                            # NextAuth config
+│   ├── auth.ts                            # NextAuth config (lazy Supabase)
 │   ├── env-validation.ts                  # Env var checker
-│   ├── error-codes.ts                     # 22 error codes
+│   ├── error-codes.ts                     # 18 error codes
 │   ├── require-role.ts                    # Role check helper
 │   └── utils.ts                           # Utilities
 ├── services/
@@ -258,8 +282,9 @@ src/
 │   ├── supabase-client.ts                 # Browser Supabase client
 │   └── supabase-server.ts                 # Server Supabase client
 ├── types/
-│   └── schemas.ts                         # TypeScript interfaces
-├── middleware.ts                          # Route protection
+│   ├── schemas.ts                         # TS interfaces + enums
+│   └── database.ts                        # Generated Supabase types
+├── proxy.ts                               # Auth redirect middleware
 └── test-setup.ts                          # Vitest setup
 supabase/
 ├── migrations/
@@ -278,19 +303,31 @@ supabase/
 | GET | `/api/health` | - | Health check |
 | GET | `/api/discharge` | Any | List records (search, filter, paginate) |
 | POST | `/api/discharge/generate` | Doctor/Nurse | Generate discharge from input |
+| GET | `/api/discharge/draft` | Doctor/Nurse | Get saved draft |
+| POST | `/api/discharge/draft` | Doctor/Nurse | Save draft |
+| DELETE | `/api/discharge/draft` | Doctor/Nurse | Clear draft |
 | GET | `/api/discharge/[id]` | Any | Get single record |
 | PUT | `/api/discharge/[id]` | Doctor/Nurse | Edit record |
 | POST | `/api/discharge/[id]/finalise` | Doctor | Finalise record |
 | POST | `/api/discharge/[id]/archive` | Doctor/Admin | Archive record |
-| GET | `/api/discharge/[id]/export` | Doctor/Nurse | Export record data |
+| POST | `/api/discharge/[id]/unarchive` | Doctor/Admin | Unarchive record |
+| GET | `/api/discharge/[id]/export` | Doctor/Nurse | Export record (JSON/PDF) |
 | POST | `/api/translation/request` | Doctor/Nurse | Request translation |
 | GET | `/api/audit/[recordId]` | Admin | Get audit log entries |
+| GET | `/api/admin/clinicians` | Admin | List clinicians |
+| POST | `/api/admin/clinicians` | Admin | Add clinician |
+| DELETE | `/api/admin/clinicians/[id]` | Admin | Remove clinician |
+| GET | `/api/admin/compliance` | Admin | Compliance report |
+| GET | `/api/admin/demo-requests` | Admin | List demo requests |
+| POST | `/api/facilities/register` | - | Register facility |
+| POST | `/api/fhir/convert` | Any | Convert to FHIR format |
+| GET | `/api/dashboard/metrics` | Any | Dashboard metrics |
 
 ---
 
 ## Database Schema
 
-Six tables with Row-Level Security:
+Eight tables with Row-Level Security:
 
 | Table | Purpose |
 |-------|---------|
@@ -300,12 +337,15 @@ Six tables with Row-Level Security:
 | `discharge_records` | AI-generated output + metadata |
 | `translation_requests` | Translation job tracking |
 | `audit_logs` | Immutable action log (NDPR 2019) |
+| `rate_limits` | Distributed rate limiting (replaces in-memory maps) |
+| `form_drafts` | Server-side form draft persistence per user |
 
 Key constraints:
 - `discharge_date >= admission_date` (enforced at DB level)
 - `audit_logs.changes_diff` only for `edit` actions
 - `translation_requests.completed_at` required when `output_text` is present
 - Foreign keys with `ON DELETE RESTRICT` on clinical data
+- Every sensitive API route is auth-guarded server-side; role check never relies on client
 
 ---
 
@@ -322,7 +362,7 @@ npm run test:watch
 npm run build
 ```
 
-Test coverage (28 tests across 4 files):
+Test coverage (53 tests across 15 files):
 
 | File | Focus |
 |------|-------|
@@ -330,6 +370,17 @@ Test coverage (28 tests across 4 files):
 | `PatientInputForm.test.tsx` | Zod schema: required fields, age bounds, date ordering, medications |
 | `RoleGate.test.tsx` | Role-based rendering, fallback, undefined role |
 | `StatusBadge.test.tsx` | Draft/finalised/archived styling |
+| `ClinicianManagement.test.tsx` | Admin clinician CRUD |
+| `ContactPage.test.tsx` | Contact form validation + submission |
+| `auth.test.ts` | Auth config, rate limiting, password hashing |
+| `audit-log.test.ts` | Audit log write/read/pagination |
+| `compliance.test.ts` | Compliance report endpoint |
+| `demo-requests.test.ts` | Demo request lifecycle |
+| `discharge-generate.test.ts` | AI generation endpoint as black box |
+| `edit-record.test.ts` | Record edit endpoint (PUT) |
+| `export-record.test.ts` | JSON export format completeness |
+| `register-facility.test.ts` | Facility registration validation |
+| `translation-request.test.ts` | Translation API via Supabase |
 
 ---
 
@@ -347,7 +398,7 @@ Test coverage (28 tests across 4 files):
 }
 ```
 
-Set all 15 environment variables in Vercel dashboard across 3 environments (production, preview, development).
+Set all environment variables in Vercel dashboard across 3 environments (production, preview, development). Note: `NEXTAUTH_URL` was removed — Auth.js v5 auto-detects the host. Add `AUTH_TRUST_HOST=true` instead.
 
 ### Domain
 
@@ -368,17 +419,16 @@ Set all 15 environment variables in Vercel dashboard across 3 environments (prod
 
 ---
 
-## 7-Day Implementation Plan
+## Build Milestones
 
-| Day | Focus |
-|-----|-------|
-| 1 | Bootstrap + Scaffold — Next.js, Supabase, schemas, error codes, folder structure |
-| 2 | Data Layer + Auth — Supabase clients, audit service, NextAuth v5, middleware, login |
-| 3 | PatientInput Form + AI Engine — 19-field form, DeepSeek integration, guardrails |
-| 4 | Output Display + Record Lifecycle — Viewer, inline editing, finalise/archive |
-| 5 | Translation + Export/Print — Translate button, print HTML, WhatsApp share, PDF |
-| 6 | Audit + Pages/Navigation — Audit log table, dashboard, settings, sidebar |
-| 7 | Testing + Deployment + Bug Fixes — 28 tests, bug audit (26 fixes), Vercel config |
+| Milestone | Scope | Status |
+|-----------|-------|--------|
+| M1 | System prompt locked; schemas approved; UI wireframes done | ✅ |
+| M2 | PatientInput form + AI generation (Mode 1 + Mode 2) + output display; no auth yet | ✅ |
+| M3 | Auth + role system; translation (ha / yo / ig); audit logging; export/print; PDF; FHIR | ✅ |
+| M4 | 2 partner hospitals onboarded for pilot; clinician training | ⏳ |
+| M5 | Pilot feedback integrated; NDPR audit complete; v1.0 public release | ⏳ |
+| M6 | WhatsApp send; Pidgin UI; EHR scoping; additional languages (v1.1) | ⏳ |
 
 ---
 
