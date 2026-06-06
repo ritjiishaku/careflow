@@ -1,9 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { PatientInputForm, type PatientInputFormData } from "@/components/forms/PatientInputForm";
+import dynamic from "next/dynamic";
+import type { PatientInputFormData } from "@/components/forms/PatientInputForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft } from "lucide-react";
+
+const PatientInputForm = dynamic(
+  () => import("@/components/forms/PatientInputForm").then((m) => m.PatientInputForm),
+  { loading: () => <div className="h-96 animate-pulse rounded-xl bg-slate-100" /> },
+);
 
 function toProceduresArray(value: string | undefined | null): string[] {
   if (!value) return [];
