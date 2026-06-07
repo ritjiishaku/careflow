@@ -197,11 +197,18 @@ export function ClinicalSummaryPanel({ content, missingFieldsLog }: ClinicalSumm
   const patientKv = sections["Patient information"] ? parseKeyValue(sections["Patient information"]) : {};
   const medications = sections["Medications"] ? parseMedicationTable(sections["Medications"]) : [];
 
-  function renderSection(name: string, children: React.ReactNode, style?: React.CSSProperties) {
+  function renderSection(name: string, children: React.ReactNode, heading?: React.ReactNode, style?: React.CSSProperties) {
     const sectionText = sections[name] ?? "";
     return (
       <div style={{ ...style }}>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4, minHeight: 28 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, minHeight: 28 }}>
+          {heading !== undefined ? (
+            heading
+          ) : (
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#64748B" }}>
+              {name}
+            </div>
+          )}
           <CopyButton text={sectionText} label={name} />
         </div>
         {children}
@@ -319,43 +326,15 @@ export function ClinicalSummaryPanel({ content, missingFieldsLog }: ClinicalSumm
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {sections["Treatment provided"] && (
               renderSection("Treatment provided",
-                <div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      letterSpacing: "0.08em",
-                      textTransform: "uppercase",
-                      color: "#64748B",
-                      marginBottom: 4,
-                    }}
-                  >
-                    Treatment provided
-                  </div>
-                  <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.6 }}>
-                    {sections["Treatment provided"]}
-                  </div>
+                <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.6 }}>
+                  {sections["Treatment provided"]}
                 </div>
               )
             )}
             {sections["Procedures performed"] && (
               renderSection("Procedures performed",
-                <div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      letterSpacing: "0.08em",
-                      textTransform: "uppercase",
-                      color: "#64748B",
-                      marginBottom: 4,
-                    }}
-                  >
-                    Procedures performed
-                  </div>
-                  <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.6 }}>
-                    {sections["Procedures performed"]}
-                  </div>
+                <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.6 }}>
+                  {sections["Procedures performed"]}
                 </div>
               )
             )}
@@ -415,12 +394,12 @@ export function ClinicalSummaryPanel({ content, missingFieldsLog }: ClinicalSumm
                 borderRadius: 6,
               }}
             >
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#0B6E6E", marginBottom: 4 }}>
-                Follow-up instructions
-              </div>
               <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.6 }}>
                 {sections["Follow-up instructions"]}
               </div>
+            </div>,
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#0B6E6E" }}>
+              Follow-up instructions
             </div>
           )
         )}
@@ -435,15 +414,15 @@ export function ClinicalSummaryPanel({ content, missingFieldsLog }: ClinicalSumm
                 borderRadius: 6,
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <span role="img" aria-label="warning" style={{ fontSize: 18, color: "#B45309" }}>⚠</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "#B45309" }}>
-                  Red flag warnings
-                </span>
-              </div>
               <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.6 }}>
                 {sections["Red flag warnings"]}
               </div>
+            </div>,
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span role="img" aria-label="warning" style={{ fontSize: 18, color: "#B45309" }}>⚠</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#B45309" }}>
+                Red flag warnings
+              </span>
             </div>
           )
         )}
@@ -458,9 +437,6 @@ export function ClinicalSummaryPanel({ content, missingFieldsLog }: ClinicalSumm
                 borderRadius: 6,
               }}
             >
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#64748B", marginBottom: 4 }}>
-                Discharged by
-              </div>
               <div style={{ fontSize: 14, fontWeight: 600, color: "#1E293B" }}>
                 {(() => {
                   const kv = parseKeyValue(sections["Discharged by"]);
