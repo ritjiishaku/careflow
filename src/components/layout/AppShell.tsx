@@ -6,9 +6,10 @@ import { TopNav } from "./TopNav";
 
 interface AppShellProps {
   children: ReactNode;
+  hideSidebar?: boolean;
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, hideSidebar }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -21,26 +22,30 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="flex h-screen bg-cool-off-white">
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      {!hideSidebar && (
+        <>
+          {/* Mobile overlay */}
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 z-40 bg-black/50 md:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
 
-      {/* Sidebar — drawer on mobile, fixed on desktop */}
-      <div
-        className={`
-          fixed inset-y-0 left-0 z-50 md:static md:z-auto
-          transition-transform duration-200 ease-in-out
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-        `}
-      >
-        <Suspense fallback={null}>
-          <Sidebar onClose={() => setSidebarOpen(false)} />
-        </Suspense>
-      </div>
+          {/* Sidebar — drawer on mobile, fixed on desktop */}
+          <div
+            className={`
+              fixed inset-y-0 left-0 z-50 md:static md:z-auto
+              transition-transform duration-200 ease-in-out
+              ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+            `}
+          >
+            <Suspense fallback={null}>
+              <Sidebar onClose={() => setSidebarOpen(false)} />
+            </Suspense>
+          </div>
+        </>
+      )}
 
       <div className="flex flex-1 flex-col overflow-hidden">
         <TopNav onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />

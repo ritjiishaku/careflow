@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Button } from "@/components/ui/button";
 import { ClinicalSummaryPanel } from "@/components/outputs/ClinicalSummaryPanel";
 import { PatientInstructionsPanel } from "@/components/outputs/PatientInstructionsPanel";
@@ -51,6 +51,7 @@ export function DischargeOutputView({ id, onNavigate }: DischargeOutputViewProps
   const [confirmAction, setConfirmAction] = useState<"finalise" | "archive" | "unarchive" | null>(null);
   const [translateLang, setTranslateLang] = useState<string>("");
   const [translating, setTranslating] = useState(false);
+  const [activeMode, setActiveMode] = useState<"clinical" | "patient">("patient");
 
   useEffect(() => {
     document.title = "CareFlow — Discharge Output";
@@ -270,98 +271,92 @@ export function DischargeOutputView({ id, onNavigate }: DischargeOutputViewProps
         </div>
       </div>
 
-      <div className="lg:hidden">
-        <Tabs defaultValue="patient" className="w-full">
-          <TabsList className="w-full">
-            {canSeeClinical && <TabsTrigger value="clinical" className="flex-1">Clinical Summary</TabsTrigger>}
-            <TabsTrigger value="patient" className="flex-1">Patient Instructions</TabsTrigger>
-            {record.translatedOutput && <TabsTrigger value="translation" className="flex-1">Translation</TabsTrigger>}
-          </TabsList>
-          {canSeeClinical && (
-            <TabsContent value="clinical">
-              {isEditing ? (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between rounded-lg border-2 border-warm-amber bg-warm-amber/5 p-2">
-                    <span className="text-xs text-slate">
-                      Words: {editClinical.split(/\s+/).filter(Boolean).length} · Characters: {editClinical.length}
-                    </span>
-                  </div>
-                  <textarea className="min-h-[500px] w-full rounded-lg border border-input bg-transparent p-4 font-mono text-sm" value={editClinical} onChange={(e) => setEditClinical(e.target.value)} />
-                </div>
-              ) : (
-                <ClinicalSummaryPanel content={record.clinicalSummary} missingFieldsLog={record.missingFieldsLog} />
-              )}
-            </TabsContent>
-          )}
-          <TabsContent value="patient">
-            {isEditing ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between rounded-lg border-2 border-warm-amber bg-warm-amber/5 p-2">
-                  <span className="text-xs text-slate">
-                    Words: {editPatient.split(/\s+/).filter(Boolean).length} · Characters: {editPatient.length}
-                  </span>
-                </div>
-                <textarea className="min-h-[400px] w-full rounded-lg border border-input bg-transparent p-4 font-mono text-sm" value={editPatient} onChange={(e) => setEditPatient(e.target.value)} />
-              </div>
-            ) : (
-              <PatientInstructionsPanel content={record.patientFriendlyOutput} />
-            )}
-          </TabsContent>
-          {record.translatedOutput && (
-            <TabsContent value="translation">
-              <TranslationPanel
-                content={record.translatedOutput}
-                language={record.translationLanguage ?? null}
-                confidence={record.translationConfidence ?? null}
-                onRetranslate={record.translationLanguage ? () => handleTranslate(record.translationLanguage!) : undefined}
-              />
-            </TabsContent>
-          )}
-        </Tabs>
+      <div className="flex rounded-lg border border-slate/20 bg-cool-off-white p-1">
+        {canSeeClinical && (
+          <button
+            type="button"
+            onClick={() => setActiveMode("clinical")}
+            className={`flex-1 rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
+              activeMode === "clinical"
+                ? "bg-clinical-teal text-white shadow-sm"
+                : "bg-transparent text-slate hover:text-deep-navy"
+            }`}
+          >
+            <span className="flex items-center justify-center gap-2">
+              Clinical Discharge Summary
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                activeMode === "clinical"
+                  ? "bg-white/20 text-white"
+                  : "bg-clinical-teal/10 text-clinical-teal"
+              }`}>
+                MODE 1
+              </span>
+            </span>
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => setActiveMode("patient")}
+          className={`flex-1 rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
+            activeMode === "patient"
+              ? "bg-clinical-teal text-white shadow-sm"
+              : "bg-transparent text-slate hover:text-deep-navy"
+          }`}
+        >
+          <span className="flex items-center justify-center gap-2">
+            Patient Discharge Instructions
+            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+              activeMode === "patient"
+                ? "bg-white/20 text-white"
+                : "bg-warm-amber/10 text-warm-amber"
+            }`}>
+              MODE 2
+            </span>
+          </span>
+        </button>
       </div>
 
-      <div className="hidden space-y-6 lg:block">
-        <div className="grid grid-cols-[45%_55%] gap-6">
-          {canSeeClinical && (
-            <div>
-              {isEditing ? (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between rounded-lg border-2 border-warm-amber bg-warm-amber/5 p-2">
-                    <span className="text-xs text-slate">
-                      Words: {editClinical.split(/\s+/).filter(Boolean).length} · Characters: {editClinical.length}
-                    </span>
-                  </div>
-                  <textarea className="min-h-[500px] w-full rounded-lg border border-input bg-transparent p-4 font-mono text-sm" value={editClinical} onChange={(e) => setEditClinical(e.target.value)} />
-                </div>
-              ) : (
-                <ClinicalSummaryPanel content={record.clinicalSummary} missingFieldsLog={record.missingFieldsLog} />
-              )}
-            </div>
-          )}
-          <div className={canSeeClinical ? "" : "col-span-2"}>
-            {isEditing ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between rounded-lg border-2 border-warm-amber bg-warm-amber/5 p-2">
-                  <span className="text-xs text-slate">
-                    Words: {editPatient.split(/\s+/).filter(Boolean).length} · Characters: {editPatient.length}
-                  </span>
-                </div>
-                <textarea className="min-h-[400px] w-full rounded-lg border border-input bg-transparent p-4 font-mono text-sm" value={editPatient} onChange={(e) => setEditPatient(e.target.value)} />
+      {activeMode === "clinical" && canSeeClinical && (
+        <div>
+          {isEditing ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between rounded-lg border-2 border-warm-amber bg-warm-amber/5 p-2">
+                <span className="text-xs text-slate">
+                  Words: {editClinical.split(/\s+/).filter(Boolean).length} · Characters: {editClinical.length}
+                </span>
               </div>
-            ) : (
-              <PatientInstructionsPanel content={record.patientFriendlyOutput} />
-            )}
-          </div>
+              <textarea className="min-h-[500px] w-full rounded-lg border border-input bg-transparent p-4 font-mono text-sm" value={editClinical} onChange={(e) => setEditClinical(e.target.value)} />
+            </div>
+          ) : (
+            <ClinicalSummaryPanel content={record.clinicalSummary} missingFieldsLog={record.missingFieldsLog} />
+          )}
         </div>
-        {record.translatedOutput && (
-          <TranslationPanel
-            content={record.translatedOutput}
-            language={record.translationLanguage ?? null}
-            confidence={record.translationConfidence ?? null}
-            onRetranslate={record.translationLanguage ? () => handleTranslate(record.translationLanguage!) : undefined}
-          />
-        )}
-      </div>
+      )}
+
+      {activeMode === "patient" && (
+        <div className="space-y-6">
+          {isEditing ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between rounded-lg border-2 border-warm-amber bg-warm-amber/5 p-2">
+                <span className="text-xs text-slate">
+                  Words: {editPatient.split(/\s+/).filter(Boolean).length} · Characters: {editPatient.length}
+                </span>
+              </div>
+              <textarea className="min-h-[400px] w-full rounded-lg border border-input bg-transparent p-4 font-mono text-sm" value={editPatient} onChange={(e) => setEditPatient(e.target.value)} />
+            </div>
+          ) : (
+            <PatientInstructionsPanel content={record.patientFriendlyOutput} />
+          )}
+          {record.translatedOutput && (
+            <TranslationPanel
+              content={record.translatedOutput}
+              language={record.translationLanguage ?? null}
+              confidence={record.translationConfidence ?? null}
+              onRetranslate={record.translationLanguage ? () => handleTranslate(record.translationLanguage!) : undefined}
+            />
+          )}
+        </div>
+      )}
 
       <ConfirmModal
         open={confirmOpen}

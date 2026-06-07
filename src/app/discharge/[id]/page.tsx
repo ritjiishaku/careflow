@@ -10,7 +10,7 @@ export default function DischargeOutputPage({ params }: { params: Promise<{ id: 
   const router = useRouter();
 
   return (
-    <AppShell>
+    <AppShell hideSidebar>
       <DischargeOutputView
         id={id}
         onNavigate={(v) => {
