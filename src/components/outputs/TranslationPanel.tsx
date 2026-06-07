@@ -36,7 +36,7 @@ function parseSections(text: string): Record<string, string> {
   return sections;
 }
 
-const SEPARATOR_RE = /─{10,}/;
+const SEPARATOR_RE = /[─━—–\-]{10,}/;
 
 function renderWithDividers(text: string, dividerColor = "#E2E8F0"): React.ReactNode[] {
   const parts = text.split(SEPARATOR_RE);
@@ -50,7 +50,7 @@ function renderWithDividers(text: string, dividerColor = "#E2E8F0"): React.React
       nodes.push(<span key={`t-${i}`}>{trimmed}</span>);
     }
     if (i < parts.length - 1) {
-      nodes.push(<hr key={`hr-${i}`} style={{ border: "none", borderTop: `1.5px solid ${dividerColor}`, margin: "16px 0", opacity: 0.6 }} />);
+      nodes.push(<hr key={`hr-${i}`} style={{ width: "100%", maxWidth: "100%", boxSizing: "border-box", border: "none", borderTop: `1.5px solid ${dividerColor}`, margin: "16px 0", opacity: 0.6 }} />);
     }
   });
   return nodes.length > 0 ? nodes : [text];

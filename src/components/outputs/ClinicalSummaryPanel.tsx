@@ -128,7 +128,7 @@ interface ClinicalSummaryPanelProps {
   missingFieldsLog?: string[] | null;
 }
 
-const SEPARATOR_RE = /─{10,}/;
+const SEPARATOR_RE = /[─━—–\-]{10,}/;
 
 function renderWithDividers(text: string): React.ReactNode[] {
   const parts = text.split(SEPARATOR_RE);
@@ -142,7 +142,7 @@ function renderWithDividers(text: string): React.ReactNode[] {
       nodes.push(<span key={`t-${i}`}>{trimmed}</span>);
     }
     if (i < parts.length - 1) {
-      nodes.push(<hr key={`hr-${i}`} style={{ border: "none", borderTop: "1px solid #E2E8F0", margin: "12px 0" }} />);
+      nodes.push(<hr key={`hr-${i}`} style={{ width: "100%", maxWidth: "100%", boxSizing: "border-box", border: "none", borderTop: "1px solid #E2E8F0", margin: "12px 0" }} />);
     }
   });
   return nodes.length > 0 ? nodes : [text];
