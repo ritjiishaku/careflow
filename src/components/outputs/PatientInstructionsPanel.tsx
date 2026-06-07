@@ -140,6 +140,26 @@ function formatWhatsAppText(patientFriendlyOutput: string): string {
   return text;
 }
 
+const SEPARATOR_RE = /─{10,}/;
+
+function renderWithDividers(text: string): React.ReactNode[] {
+  const parts = text.split(SEPARATOR_RE);
+  const nodes: React.ReactNode[] = [];
+  parts.forEach((part, i) => {
+    const trimmed = part.trim();
+    if (trimmed) {
+      if (nodes.length > 0) {
+        nodes.push(<br key={`br-${i}`} />);
+      }
+      nodes.push(<span key={`t-${i}`}>{trimmed}</span>);
+    }
+    if (i < parts.length - 1) {
+      nodes.push(<hr key={`hr-${i}`} style={{ border: "none", borderTop: "1px solid #E2E8F0", margin: "12px 0" }} />);
+    }
+  });
+  return nodes.length > 0 ? nodes : [text];
+}
+
 interface PatientInstructionsPanelProps {
   content: string;
   patientName?: string;
@@ -300,7 +320,7 @@ export function PatientInstructionsPanel({
               </span>
             </div>
             <div style={{ fontSize: 15, color: "#1E293B", lineHeight: 1.7, marginLeft: 34 }}>
-              {sections["What happened"]}
+              {renderWithDividers(sections["What happened"])}
             </div>
           </div>
         )}
@@ -314,7 +334,7 @@ export function PatientInstructionsPanel({
               </span>
             </div>
             <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.6, marginLeft: 34 }}>
-              {sections["Treatment you received"]}
+              {renderWithDividers(sections["Treatment you received"])}
             </div>
           </div>
         )}
@@ -333,7 +353,7 @@ export function PatientInstructionsPanel({
                 if (meds.length === 0) {
                   return (
                     <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.6 }}>
-                      {sections["Your medications"]}
+                      {renderWithDividers(sections["Your medications"])}
                     </div>
                   );
                 }
@@ -387,7 +407,10 @@ export function PatientInstructionsPanel({
                 const text = sections["Important home care instructions"];
                 const hasBreaks = text.includes("\n");
                 if (hasBreaks) {
-                  const bullets = text.split("\n").filter((l) => l.trim());
+                  const bullets = text.split("\n").filter((l) => l.trim() && !/^─{10,}$/.test(l.trim()));
+                  if (bullets.length === 0) {
+                    return null;
+                  }
                   return (
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                       {bullets.map((b, i) => (
@@ -401,7 +424,7 @@ export function PatientInstructionsPanel({
                 }
                 return (
                   <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.6 }}>
-                    {text}
+                    {renderWithDividers(text)}
                   </div>
                 );
               })()}
@@ -427,7 +450,7 @@ export function PatientInstructionsPanel({
                 </span>
               </div>
               <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.7, marginLeft: 0 }}>
-                {sections["When to return to the hospital"]}
+                {renderWithDividers(sections["When to return to the hospital"])}
               </div>
             </div>
           </div>
@@ -449,8 +472,8 @@ export function PatientInstructionsPanel({
                   Your follow-up appointment
                 </span>
               </div>
-              <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.6, marginLeft: 0, overflowWrap: "break-word", wordBreak: "break-word" }}>
-                {sections["Your follow-up appointment"]}
+              <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.6, marginLeft: 0 }}>
+                {renderWithDividers(sections["Your follow-up appointment"])}
               </div>
             </div>
           </div>

@@ -128,6 +128,26 @@ interface ClinicalSummaryPanelProps {
   missingFieldsLog?: string[] | null;
 }
 
+const SEPARATOR_RE = /─{10,}/;
+
+function renderWithDividers(text: string): React.ReactNode[] {
+  const parts = text.split(SEPARATOR_RE);
+  const nodes: React.ReactNode[] = [];
+  parts.forEach((part, i) => {
+    const trimmed = part.trim();
+    if (trimmed) {
+      if (nodes.length > 0) {
+        nodes.push(<br key={`br-${i}`} />);
+      }
+      nodes.push(<span key={`t-${i}`}>{trimmed}</span>);
+    }
+    if (i < parts.length - 1) {
+      nodes.push(<hr key={`hr-${i}`} style={{ border: "none", borderTop: "1px solid #E2E8F0", margin: "12px 0" }} />);
+    }
+  });
+  return nodes.length > 0 ? nodes : [text];
+}
+
 export function ClinicalSummaryPanel({ content, missingFieldsLog }: ClinicalSummaryPanelProps) {
   const sections = parseSections(content);
   const hasSections = Object.keys(sections).length > 1;
@@ -316,7 +336,7 @@ export function ClinicalSummaryPanel({ content, missingFieldsLog }: ClinicalSumm
               }}
             >
               <div style={{ fontSize: 15, fontWeight: 600, color: "#0D2B4E", marginBottom: 4, lineHeight: 1.5 }}>
-                {sections["Diagnosis"]}
+                {renderWithDividers(sections["Diagnosis"])}
               </div>
             </div>
           )
@@ -327,14 +347,14 @@ export function ClinicalSummaryPanel({ content, missingFieldsLog }: ClinicalSumm
             {sections["Treatment provided"] && (
               renderSection("Treatment provided",
                 <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.6 }}>
-                  {sections["Treatment provided"]}
+                  {renderWithDividers(sections["Treatment provided"])}
                 </div>
               )
             )}
             {sections["Procedures performed"] && (
               renderSection("Procedures performed",
                 <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.6 }}>
-                  {sections["Procedures performed"]}
+                  {renderWithDividers(sections["Procedures performed"])}
                 </div>
               )
             )}
@@ -395,7 +415,7 @@ export function ClinicalSummaryPanel({ content, missingFieldsLog }: ClinicalSumm
               }}
             >
               <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.6 }}>
-                {sections["Follow-up instructions"]}
+                {renderWithDividers(sections["Follow-up instructions"])}
               </div>
             </div>,
             <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#0B6E6E" }}>
@@ -415,7 +435,7 @@ export function ClinicalSummaryPanel({ content, missingFieldsLog }: ClinicalSumm
               }}
             >
               <div style={{ fontSize: 14, color: "#1E293B", lineHeight: 1.6 }}>
-                {sections["Red flag warnings"]}
+                {renderWithDividers(sections["Red flag warnings"])}
               </div>
             </div>,
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
