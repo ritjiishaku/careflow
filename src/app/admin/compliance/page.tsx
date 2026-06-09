@@ -226,38 +226,7 @@ export default function CompliancePage() {
           </Card>
         </div>
 
-        <div className="overflow-y-auto sm:hidden flex-1 min-h-0 -mx-4 px-4">
-          <div className="space-y-3 pb-4">
-          {data.recentActivity.length === 0 ? (
-            <div className="rounded-lg border border-slate/10 bg-white p-8 text-center text-sm text-cool-grey">
-              No recent activity.
-            </div>
-          ) : (
-            data.recentActivity.map((r) => {
-              const colors = ACTION_COLORS[r.action] ?? "text-slate bg-slate/10";
-              return (
-                <div key={r.logId} className="rounded-lg border border-slate/10 bg-white p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate font-medium text-slate">{r.userName}</p>
-                      <p className="text-xs text-cool-grey font-mono">{r.userRole}</p>
-                    </div>
-                    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${colors}`}>
-                      {r.action}
-                    </span>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between border-t border-slate/10 pt-3 text-xs text-cool-grey font-mono">
-                    <span>{r.ipAddress ?? "—"}</span>
-                    <span>{new Date(r.timestamp).toLocaleString("en-NG", { timeZone: "Africa/Lagos" })}</span>
-                  </div>
-                </div>
-              );
-            })
-          )}
-          </div>
-        </div>
-
-        <Card className="hidden sm:flex min-h-0 flex-1 flex-col border-slate/10">
+        <Card className="flex min-h-0 flex-1 flex-col border-slate/10">
           <CardHeader className="flex-shrink-0">
             <CardTitle className="flex items-center gap-2 text-sm text-deep-navy">
               <Activity className="h-4 w-4 text-clinical-teal" />
@@ -266,43 +235,73 @@ export default function CompliancePage() {
           </CardHeader>
           <CardContent className="flex min-h-0 flex-1 overflow-hidden p-0">
             <div className="h-full overflow-auto">
-              <div className="inline-block min-w-full align-middle">
-                <table className="w-full text-left text-sm">
-                  <thead className="sticky top-0 z-10 bg-cool-off-white">
-                    <tr className="border-b border-slate/10">
-                      <th scope="col" className="px-3 py-2 font-semibold text-deep-navy sm:px-4 sm:py-3">User</th>
-                      <th scope="col" className="px-3 py-2 font-semibold text-deep-navy sm:px-4 sm:py-3">Action</th>
-                      <th scope="col" className="px-3 py-2 font-semibold text-deep-navy sm:px-4 sm:py-3">IP Address</th>
-                      <th scope="col" className="px-3 py-2 font-semibold text-deep-navy sm:px-4 sm:py-3">Timestamp</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.recentActivity.length === 0 ? (
-                      <tr><td colSpan={4} className="px-3 py-8 text-center text-cool-grey sm:px-4">No recent activity.</td></tr>
-                    ) : (
-                      data.recentActivity.map((r, i) => {
-                        const colors = ACTION_COLORS[r.action] ?? "text-slate bg-slate/10";
-                        return (
-                          <tr key={r.logId} className={`border-b border-slate/10 ${i % 2 === 0 ? "bg-white" : "bg-cool-off-white/50"}`}>
-                          <td className="px-3 py-2 sm:px-4 sm:py-3">
-                            <p className="font-medium text-slate">{r.userName}</p>
+              <div className="space-y-3 p-4 sm:hidden">
+                {data.recentActivity.length === 0 ? (
+                  <div className="rounded-lg border border-slate/10 bg-white p-8 text-center text-sm text-cool-grey">
+                    No recent activity.
+                  </div>
+                ) : (
+                  data.recentActivity.map((r) => {
+                    const colors = ACTION_COLORS[r.action] ?? "text-slate bg-slate/10";
+                    return (
+                      <div key={r.logId} className="rounded-lg border border-slate/10 bg-white p-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="truncate font-medium text-slate">{r.userName}</p>
                             <p className="text-xs text-cool-grey font-mono">{r.userRole}</p>
-                          </td>
-                          <td className="px-3 py-2 sm:px-4 sm:py-3">
-                            <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${colors}`}>
-                              {r.action}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2 text-xs text-cool-grey font-mono sm:px-4 sm:py-3">{r.ipAddress ?? "—"}</td>
-                          <td className="px-3 py-2 text-xs text-cool-grey font-mono sm:px-4 sm:py-3">
-                            {new Date(r.timestamp).toLocaleString("en-NG", { timeZone: "Africa/Lagos" })}
-                          </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
+                          </div>
+                          <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${colors}`}>
+                            {r.action}
+                          </span>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between border-t border-slate/10 pt-3 text-xs text-cool-grey font-mono">
+                          <span>{r.ipAddress ?? "—"}</span>
+                          <span>{new Date(r.timestamp).toLocaleString("en-NG", { timeZone: "Africa/Lagos" })}</span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+              <div className="hidden sm:block">
+                <div className="inline-block min-w-full align-middle">
+                  <table className="w-full text-left text-sm">
+                    <thead className="sticky top-0 z-10 bg-cool-off-white">
+                      <tr className="border-b border-slate/10">
+                        <th scope="col" className="px-3 py-2 font-semibold text-deep-navy sm:px-4 sm:py-3">User</th>
+                        <th scope="col" className="px-3 py-2 font-semibold text-deep-navy sm:px-4 sm:py-3">Action</th>
+                        <th scope="col" className="px-3 py-2 font-semibold text-deep-navy sm:px-4 sm:py-3">IP Address</th>
+                        <th scope="col" className="px-3 py-2 font-semibold text-deep-navy sm:px-4 sm:py-3">Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.recentActivity.length === 0 ? (
+                        <tr><td colSpan={4} className="px-3 py-8 text-center text-cool-grey sm:px-4">No recent activity.</td></tr>
+                      ) : (
+                        data.recentActivity.map((r, i) => {
+                          const colors = ACTION_COLORS[r.action] ?? "text-slate bg-slate/10";
+                          return (
+                            <tr key={r.logId} className={`border-b border-slate/10 ${i % 2 === 0 ? "bg-white" : "bg-cool-off-white/50"}`}>
+                            <td className="px-3 py-2 sm:px-4 sm:py-3">
+                              <p className="font-medium text-slate">{r.userName}</p>
+                              <p className="text-xs text-cool-grey font-mono">{r.userRole}</p>
+                            </td>
+                            <td className="px-3 py-2 sm:px-4 sm:py-3">
+                              <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${colors}`}>
+                                {r.action}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2 text-xs text-cool-grey font-mono sm:px-4 sm:py-3">{r.ipAddress ?? "—"}</td>
+                            <td className="px-3 py-2 text-xs text-cool-grey font-mono sm:px-4 sm:py-3">
+                              {new Date(r.timestamp).toLocaleString("en-NG", { timeZone: "Africa/Lagos" })}
+                            </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </CardContent>

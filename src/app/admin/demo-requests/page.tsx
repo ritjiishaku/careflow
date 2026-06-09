@@ -57,9 +57,8 @@ export default function DemoRequestsPage() {
             <p className="mt-4 text-lg font-medium text-deep-navy">No demo requests yet</p>
           </div>
         ) : (
-          <>
-            <div className="overflow-y-auto sm:hidden flex-1 min-h-0 -mx-4 px-4">
-              <div className="space-y-3 pb-4">
+          <div className="flex-1 min-h-0 overflow-auto rounded-lg border border-slate/10">
+            <div className="space-y-3 p-4 sm:hidden">
             {requests.map((r) => (
                 <div key={r.id} className="rounded-lg border border-slate/10 bg-white p-4">
                   <div className="flex items-start justify-between gap-2">
@@ -78,9 +77,8 @@ export default function DemoRequestsPage() {
                   </div>
                 </div>
               ))}
-              </div>
             </div>
-            <div className="hidden sm:block overflow-auto rounded-lg border border-slate/10">
+            <div className="hidden sm:block">
               <div className="inline-block min-w-full align-middle">
                 <table className="w-full text-left text-sm">
                   <thead className="sticky top-0 z-10 bg-cool-off-white">
@@ -110,7 +108,7 @@ export default function DemoRequestsPage() {
                 </table>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
     </AppShell>

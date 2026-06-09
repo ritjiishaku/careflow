@@ -60,7 +60,9 @@ export function AuditLogTable({
 
   return (
     <div className={cn("flex min-h-0 flex-col space-y-4", className)}>
-      <div className="space-y-3 sm:hidden overflow-y-auto flex-1 min-h-0 -mx-4 px-4 pb-4">
+      <div className="flex min-h-0 flex-1 overflow-hidden rounded-lg border border-slate/10">
+        <div className="h-full overflow-auto">
+          <div className="space-y-3 p-4 sm:hidden">
         {logs.map((entry) => (
           <div key={entry.logId} className="rounded-lg border border-slate/10 bg-white p-4">
             <div className="flex items-start justify-between gap-2">
@@ -96,10 +98,8 @@ export function AuditLogTable({
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="hidden sm:flex min-h-0 flex-1 overflow-hidden rounded-lg border border-slate/10">
-        <div className="h-full overflow-auto">
+          </div>
+          <div className="hidden sm:block">
           <div className="inline-block min-w-full align-middle">
             <table className="w-full text-left text-sm">
               <thead className="sticky top-0 z-10 bg-cool-off-white">
@@ -158,6 +158,7 @@ export function AuditLogTable({
             ))}
           </tbody>
         </table>
+          </div>
           </div>
         </div>
       </div>
