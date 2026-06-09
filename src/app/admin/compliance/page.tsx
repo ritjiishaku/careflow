@@ -226,7 +226,7 @@ export default function CompliancePage() {
           </Card>
         </div>
 
-        <Card className="flex min-h-0 flex-1 flex-col border-slate/10">
+        <Card className="flex min-h-0 flex-1 flex-col border-slate/10" style={{ minHeight: "300px" }}>
           <CardHeader className="flex-shrink-0">
             <CardTitle className="flex items-center gap-2 text-sm text-deep-navy">
               <Activity className="h-4 w-4 text-clinical-teal" />
@@ -263,7 +263,7 @@ export default function CompliancePage() {
                   })
                 )}
               </div>
-              <div className="hidden sm:block">
+              <div className="hidden sm:block w-full">
                   <table className="w-full text-left text-sm">
                     <thead className="sticky top-0 z-10 bg-cool-off-white">
                       <tr className="border-b border-slate/10">
