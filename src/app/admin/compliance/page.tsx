@@ -92,7 +92,7 @@ export default function CompliancePage() {
 
   return (
     <AppShell>
-      <div className="mx-auto flex h-full min-h-0 max-w-6xl flex-col p-4 sm:p-6">
+      <div className="mx-auto flex h-full min-h-0 max-w-6xl flex-col overflow-hidden p-4 sm:p-6">
         <div className="mb-6 flex-shrink-0 space-y-1">
           <h1 className="text-2xl font-bold text-deep-navy sm:text-3xl">NDPR Compliance</h1>
           <p className="text-sm text-cool-grey">
@@ -147,7 +147,7 @@ export default function CompliancePage() {
           </Card>
         </div>
 
-        <Card className="flex min-h-0 flex-1 flex-col border-slate/10" style={{ minHeight: "300px" }}>
+        <Card className="flex min-h-0 flex-1 flex-col border-slate/10">
           <CardHeader className="flex-shrink-0">
             <CardTitle className="flex items-center gap-2 text-sm text-deep-navy">
               <Activity className="h-4 w-4 text-clinical-teal" />
