@@ -251,61 +251,63 @@ export default function AdminPage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold text-deep-navy sm:text-3xl">Facility Management</h1>
-            <p className="text-sm text-cool-grey">Manage facilities, clinicians, and system preferences.</p>
-          </div>
-          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) { setEditingClinician(null); } }}>
-            <DialogTrigger render={<Button className="touch-target-min bg-clinical-teal hover:bg-clinical-teal/90" onClick={openAddDialog}><UserPlus className="mr-1 h-4 w-4" />Add Clinician</Button>} />
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>{editingClinician ? "Edit Clinician" : "Add Clinician"}</DialogTitle>
-                <DialogDescription>{editingClinician ? `Editing ${editingClinician.full_name || editingClinician.email}` : "Create a new doctor or nurse account."}</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-2">
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-slate">Full Name</label>
-                  <Input value={form.fullName} onChange={(e) => {
-                    const name = e.target.value;
-                    if (editingClinician) {
-                      setForm({ ...form, fullName: name });
-                    } else {
-                      const slug = name.toLowerCase().replace(/^dr\.?\s*/i, "").replace(/[^a-zA-Z0-9]/g, ".").replace(/\.+/g, ".").replace(/^\.|\.$/g, "");
-                      const autoEmail = slug && facilityCode ? `${slug}@${facilityCode}.careflow.app` : "";
-                      setForm({ ...form, fullName: name, email: autoEmail || form.email });
-                    }
-                  }} placeholder="e.g. Dr. Jane Doe" className="h-11" />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-slate">Email</label>
-                  <Input value={form.email} disabled={!!editingClinician} onChange={(e) => setForm({ ...form, email: e.target.value })} type="email" placeholder="e.g. jane.doe@hospital.ng" className="h-11" />
-                </div>
-                {editingClinician && (
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-slate">New Password (leave blank to keep current)</label>
-                    <Input value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} type="password" placeholder="Leave blank to keep current" className="h-11" />
-                  </div>
-                )}
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-slate">Role</label>
-                  <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="h-11 w-full rounded-lg border border-slate/30 bg-white px-3 text-sm text-slate">
-                    <option value="doctor">Doctor</option>
-                    <option value="nurse">Nurse</option>
-                  </select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => { setDialogOpen(false); setEditingClinician(null); }} disabled={submitting}>Cancel</Button>
-                <Button className="bg-clinical-teal hover:bg-clinical-teal/90" onClick={editingClinician ? handleEditClinician : handleAddClinician} disabled={submitting}>{submitting ? "Saving..." : editingClinician ? "Save Changes" : "Add Clinician"}</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-
         {error && (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>
         )}
+
+        <div className="sticky top-0 z-10 -mx-4 -mt-4 rounded-t-2xl bg-cool-off-white/95 backdrop-blur-sm px-4 pb-2 pt-4 sm:-mx-6 sm:px-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold text-deep-navy sm:text-3xl">Facility Management</h1>
+              <p className="text-sm text-cool-grey">Manage facilities, clinicians, and system preferences.</p>
+            </div>
+            <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) { setEditingClinician(null); } }}>
+              <DialogTrigger render={<Button className="touch-target-min bg-clinical-teal hover:bg-clinical-teal/90" onClick={openAddDialog}><UserPlus className="mr-1 h-4 w-4" />Add Clinician</Button>} />
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>{editingClinician ? "Edit Clinician" : "Add Clinician"}</DialogTitle>
+                  <DialogDescription>{editingClinician ? `Editing ${editingClinician.full_name || editingClinician.email}` : "Create a new doctor or nurse account."}</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-2">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate">Full Name</label>
+                    <Input value={form.fullName} onChange={(e) => {
+                      const name = e.target.value;
+                      if (editingClinician) {
+                        setForm({ ...form, fullName: name });
+                      } else {
+                        const slug = name.toLowerCase().replace(/^dr\.?\s*/i, "").replace(/[^a-zA-Z0-9]/g, ".").replace(/\.+/g, ".").replace(/^\.|\.$/g, "");
+                        const autoEmail = slug && facilityCode ? `${slug}@${facilityCode}.careflow.app` : "";
+                        setForm({ ...form, fullName: name, email: autoEmail || form.email });
+                      }
+                    }} placeholder="e.g. Dr. Jane Doe" className="h-11" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate">Email</label>
+                    <Input value={form.email} disabled={!!editingClinician} onChange={(e) => setForm({ ...form, email: e.target.value })} type="email" placeholder="e.g. jane.doe@hospital.ng" className="h-11" />
+                  </div>
+                  {editingClinician && (
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-slate">New Password (leave blank to keep current)</label>
+                      <Input value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} type="password" placeholder="Leave blank to keep current" className="h-11" />
+                    </div>
+                  )}
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate">Role</label>
+                    <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="h-11 w-full rounded-lg border border-slate/30 bg-white px-3 text-sm text-slate">
+                      <option value="doctor">Doctor</option>
+                      <option value="nurse">Nurse</option>
+                    </select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => { setDialogOpen(false); setEditingClinician(null); }} disabled={submitting}>Cancel</Button>
+                  <Button className="bg-clinical-teal hover:bg-clinical-teal/90" onClick={editingClinician ? handleEditClinician : handleAddClinician} disabled={submitting}>{submitting ? "Saving..." : editingClinician ? "Save Changes" : "Add Clinician"}</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
 
         <Card className="border-slate/10">
           <CardHeader>
