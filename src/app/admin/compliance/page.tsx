@@ -8,12 +8,6 @@ import { useRole } from "@/hooks/useRole";
 import {
   Shield,
   FileText,
-  Eye,
-  Edit3,
-  CheckCircle,
-  Archive,
-  Printer,
-  Download,
   Users,
   Activity,
 } from "lucide-react";
@@ -35,16 +29,6 @@ interface ComplianceData {
   uniqueUsers: number;
   recentActivity: RecentActivity[];
 }
-
-const ACTION_ICONS: Record<string, typeof FileText> = {
-  generate: FileText,
-  edit: Edit3,
-  view: Eye,
-  finalise: CheckCircle,
-  archive: Archive,
-  print: Printer,
-  export: Download,
-};
 
 const ACTION_COLORS: Record<string, string> = {
   generate: "text-blue-500 bg-blue-500/10",
@@ -158,69 +142,6 @@ export default function CompliancePage() {
               <div>
                 <p className="text-xs text-cool-grey">Compliance Status</p>
                 <p className="text-lg font-bold text-clinical-teal">Active</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="mb-6 flex-shrink-0 grid gap-4 md:grid-cols-2">
-          <Card className="border-slate/10">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm text-deep-navy">
-                <Activity className="h-4 w-4 text-clinical-teal" />
-                Actions Breakdown
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {Object.entries(data.actionCounts)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([action, count]) => {
-                    const Icon = ACTION_ICONS[action] ?? Activity;
-                    const colors = ACTION_COLORS[action] ?? "text-slate bg-slate/10";
-                    return (
-                      <div key={action} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className={`rounded-md p-1.5 ${colors}`}>
-                            <Icon className="h-3.5 w-3.5" />
-                          </div>
-                          <span className="text-sm text-slate capitalize">{action}</span>
-                        </div>
-                        <span className="text-sm font-semibold text-slate">{count}</span>
-                      </div>
-                    );
-                  })}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-slate/10">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm text-deep-navy">
-                <Shield className="h-4 w-4 text-clinical-teal" />
-                NDPR 2019 Compliance
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm text-slate">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-clinical-teal shrink-0" />
-                <span>Audit trail — 100% of actions logged</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-clinical-teal shrink-0" />
-                <span>Audit log immutability — UPDATE/DELETE blocked</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-clinical-teal shrink-0" />
-                <span>Role-based access control — server-side enforced</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-clinical-teal shrink-0" />
-                <span>Data residency — Nigerian-hosted infrastructure</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-clinical-teal shrink-0" />
-                <span>Consent management — patient data processed lawfully</span>
               </div>
             </CardContent>
           </Card>
