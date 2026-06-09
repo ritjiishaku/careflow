@@ -352,7 +352,6 @@ export default function AdminPage() {
                 )}
               </div>
               <div className="hidden sm:block">
-                <div className="inline-block min-w-full align-middle">
                 <table className="w-full text-left text-sm">
                   <thead className="sticky top-0 z-10 bg-cool-off-white">
                     <tr className="border-b border-slate/10">
@@ -395,7 +394,6 @@ export default function AdminPage() {
                     )}
                   </tbody>
                 </table>
-              </div>
               </div>
             </div>
           </CardContent>

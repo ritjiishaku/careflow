@@ -264,7 +264,6 @@ export default function CompliancePage() {
                 )}
               </div>
               <div className="hidden sm:block">
-                <div className="inline-block min-w-full align-middle">
                   <table className="w-full text-left text-sm">
                     <thead className="sticky top-0 z-10 bg-cool-off-white">
                       <tr className="border-b border-slate/10">
@@ -303,7 +302,6 @@ export default function CompliancePage() {
                   </table>
                 </div>
               </div>
-            </div>
           </CardContent>
         </Card>
       </div>
