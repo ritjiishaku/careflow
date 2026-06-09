@@ -60,7 +60,45 @@ export function AuditLogTable({
 
   return (
     <div className={cn("flex min-h-0 flex-col space-y-4", className)}>
-      <div className="flex min-h-0 flex-1 overflow-hidden rounded-lg border border-slate/10">
+      <div className="space-y-3 sm:hidden">
+        {logs.map((entry) => (
+          <div key={entry.logId} className="rounded-lg border border-slate/10 bg-white p-4">
+            <div className="flex items-start justify-between gap-2">
+              <span className="font-mono text-xs text-slate">{formatTimestamp(entry.timestamp)}</span>
+              <span
+                className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${
+                  entry.userRole === "doctor"
+                    ? "bg-clinical-teal/10 text-clinical-teal"
+                    : entry.userRole === "nurse"
+                      ? "bg-blue-50 text-blue-700"
+                      : "bg-deep-navy/10 text-deep-navy"
+                }`}
+              >
+                {entry.userRole}
+              </span>
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-2 text-xs text-cool-grey">
+              <span className="font-mono">{entry.userId.slice(0, 8)}...</span>
+              <span className="font-medium capitalize">{formatAction(entry.action)}</span>
+            </div>
+            <div className="mt-2 border-t border-slate/10 pt-2 text-xs text-cool-grey">
+              <div className="flex justify-between gap-2">
+                <span>IP: {entry.ipAddress ?? "—"}</span>
+              </div>
+              {(entry.changesDiff || entry.notes) && (
+                <div className="mt-1 space-y-0.5">
+                  {entry.changesDiff && (
+                    <p className="truncate">{JSON.stringify(entry.changesDiff).slice(0, 60)}</p>
+                  )}
+                  {entry.notes && <p className="truncate italic">{entry.notes}</p>}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden sm:flex min-h-0 flex-1 overflow-hidden rounded-lg border border-slate/10">
         <div className="h-full overflow-auto">
           <div className="inline-block min-w-full align-middle">
             <table className="w-full text-left text-sm">

@@ -226,7 +226,36 @@ export default function CompliancePage() {
           </Card>
         </div>
 
-        <Card className="flex min-h-0 flex-1 flex-col border-slate/10">
+        <div className="space-y-3 sm:hidden">
+          {data.recentActivity.length === 0 ? (
+            <div className="rounded-lg border border-slate/10 bg-white p-8 text-center text-sm text-cool-grey">
+              No recent activity.
+            </div>
+          ) : (
+            data.recentActivity.map((r) => {
+              const colors = ACTION_COLORS[r.action] ?? "text-slate bg-slate/10";
+              return (
+                <div key={r.logId} className="rounded-lg border border-slate/10 bg-white p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-slate">{r.userName}</p>
+                      <p className="text-xs text-cool-grey font-mono">{r.userRole}</p>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${colors}`}>
+                      {r.action}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between border-t border-slate/10 pt-3 text-xs text-cool-grey font-mono">
+                    <span>{r.ipAddress ?? "—"}</span>
+                    <span>{new Date(r.timestamp).toLocaleString("en-NG", { timeZone: "Africa/Lagos" })}</span>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        <Card className="hidden sm:flex min-h-0 flex-1 flex-col border-slate/10">
           <CardHeader className="flex-shrink-0">
             <CardTitle className="flex items-center gap-2 text-sm text-deep-navy">
               <Activity className="h-4 w-4 text-clinical-teal" />

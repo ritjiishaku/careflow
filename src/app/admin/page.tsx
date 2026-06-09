@@ -307,7 +307,43 @@ export default function AdminPage() {
           </Dialog>
         </div>
 
-        <Card className="flex min-h-0 flex-1 flex-col border-slate/10">
+        <div className="space-y-3 sm:hidden">
+          {clinicians.length === 0 ? (
+            <div className="rounded-lg border border-slate/10 bg-white p-8 text-center text-sm text-cool-grey">
+              No clinicians found.
+            </div>
+          ) : (
+            clinicians.map((c) => {
+              const badge = ROLE_BADGES[c.role] ?? { label: c.role, color: "bg-slate/10 text-slate" };
+              return (
+                <div key={c.user_id} className="rounded-lg border border-slate/10 bg-white p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-slate">{c.full_name || "—"}</p>
+                      <p className="truncate text-xs text-cool-grey mt-0.5">{c.email}</p>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.color}`}>{badge.label}</span>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between border-t border-slate/10 pt-3">
+                    <span className="text-xs text-cool-grey font-mono">
+                      {new Date(c.created_at).toLocaleDateString("en-NG")}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => openEditDialog(c)} className="touch-target-min rounded-md p-2 text-cool-grey hover:text-clinical-teal hover:bg-clinical-teal/5 transition-colors" aria-label={`Edit ${c.full_name || c.email}`}>
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => handleDeleteClinician(c)} className="touch-target-min rounded-md p-2 text-cool-grey hover:text-red-500 hover:bg-red-50 transition-colors" aria-label={`Remove ${c.full_name || c.email}`}>
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        <Card className="hidden sm:flex min-h-0 flex-1 flex-col border-slate/10">
           <CardHeader className="flex-shrink-0">
             <CardTitle className="flex items-center gap-2 text-base text-deep-navy">
               <User className="h-5 w-5 text-clinical-teal" />
