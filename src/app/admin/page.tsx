@@ -529,7 +529,7 @@ export default function AdminPage() {
         </Card>
 
         <Dialog open={!!credentialsData} onOpenChange={(open) => { if (!open) setCredentialsData(null); }}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Clinician Created</DialogTitle>
               <DialogDescription>
@@ -537,39 +537,48 @@ export default function AdminPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3 py-2">
-              <div className="rounded-lg border border-slate/10 bg-cool-off-white p-3 font-mono text-xs space-y-2.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-cool-grey shrink-0">Email:</span>
-                  <span className="text-slate truncate min-w-0">{credentialsData?.email}</span>
-                  <button
-                    onClick={() => credentialsData && copyToClipboard(credentialsData.email, "email")}
-                    className="shrink-0 rounded p-1 text-cool-grey hover:text-clinical-teal transition-colors"
-                    title="Copy email"
-                  >
-                    {copiedField === "email" ? <Check className="h-3.5 w-3.5 text-clinical-teal" /> : <Copy className="h-3.5 w-3.5" />}
-                  </button>
+              <div className="rounded-lg border border-slate/10 bg-cool-off-white p-3 font-mono text-xs space-y-3">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-cool-grey font-medium">Email</span>
+                    <button
+                      onClick={() => credentialsData && copyToClipboard(credentialsData.email, "email")}
+                      className="flex items-center gap-1 rounded px-1.5 py-0.5 text-cool-grey hover:text-clinical-teal hover:bg-clinical-teal/5 transition-colors"
+                      title="Copy email"
+                    >
+                      {copiedField === "email" ? <Check className="h-3 w-3 text-clinical-teal" /> : <Copy className="h-3 w-3" />}
+                      <span className="text-[10px]">{copiedField === "email" ? "Copied" : "Copy"}</span>
+                    </button>
+                  </div>
+                  <div className="text-slate break-all">{credentialsData?.email}</div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-cool-grey shrink-0">Password:</span>
-                  <span className="text-slate truncate min-w-0 font-bold tracking-wide">{credentialsData?.defaultPassword}</span>
-                  <button
-                    onClick={() => credentialsData && copyToClipboard(credentialsData.defaultPassword, "password")}
-                    className="shrink-0 rounded p-1 text-cool-grey hover:text-clinical-teal transition-colors"
-                    title="Copy password"
-                  >
-                    {copiedField === "password" ? <Check className="h-3.5 w-3.5 text-clinical-teal" /> : <Copy className="h-3.5 w-3.5" />}
-                  </button>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-cool-grey font-medium">Password</span>
+                    <button
+                      onClick={() => credentialsData && copyToClipboard(credentialsData.defaultPassword, "password")}
+                      className="flex items-center gap-1 rounded px-1.5 py-0.5 text-cool-grey hover:text-clinical-teal hover:bg-clinical-teal/5 transition-colors"
+                      title="Copy password"
+                    >
+                      {copiedField === "password" ? <Check className="h-3 w-3 text-clinical-teal" /> : <Copy className="h-3 w-3" />}
+                      <span className="text-[10px]">{copiedField === "password" ? "Copied" : "Copy"}</span>
+                    </button>
+                  </div>
+                  <div className="text-slate font-bold tracking-wide break-all">{credentialsData?.defaultPassword}</div>
                 </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-cool-grey shrink-0 mt-0.5">Login URL:</span>
-                  <span className="text-slate text-[10px] break-all leading-relaxed">{credentialsData?.loginUrl}</span>
-                  <button
-                    onClick={() => credentialsData && copyToClipboard(credentialsData.loginUrl, "url")}
-                    className="shrink-0 rounded p-1 text-cool-grey hover:text-clinical-teal transition-colors"
-                    title="Copy login URL"
-                  >
-                    {copiedField === "url" ? <Check className="h-3.5 w-3.5 text-clinical-teal" /> : <Copy className="h-3.5 w-3.5" />}
-                  </button>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-cool-grey font-medium">Login URL</span>
+                    <button
+                      onClick={() => credentialsData && copyToClipboard(credentialsData.loginUrl, "url")}
+                      className="flex items-center gap-1 rounded px-1.5 py-0.5 text-cool-grey hover:text-clinical-teal hover:bg-clinical-teal/5 transition-colors"
+                      title="Copy login URL"
+                    >
+                      {copiedField === "url" ? <Check className="h-3 w-3 text-clinical-teal" /> : <Copy className="h-3 w-3" />}
+                      <span className="text-[10px]">{copiedField === "url" ? "Copied" : "Copy"}</span>
+                    </button>
+                  </div>
+                  <div className="text-slate text-[10px] break-all leading-relaxed">{credentialsData?.loginUrl}</div>
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
