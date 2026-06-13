@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useRole } from "@/hooks/useRole";
-import { Plus, Search, FileText, Eye, ChevronLeft, ChevronRight, FileCheck, Clock, Archive } from "lucide-react";
+import { Plus, Search, FileText, Eye, ChevronLeft, ChevronRight, FileCheck, Clock, Archive, Edit3 } from "lucide-react";
 
 interface DischargeSummary {
   recordId: string;
@@ -31,6 +31,7 @@ export function DashboardList({ onNavigate }: DashboardListProps) {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [savedDraftAt, setSavedDraftAt] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
@@ -46,12 +47,21 @@ export function DashboardList({ onNavigate }: DashboardListProps) {
     async function load() {
       setError(null);
       try {
-        const [recordsRes, metricsRes] = await Promise.all([
+        const [recordsRes, metricsRes, draftRes] = await Promise.all([
           fetch(`/api/discharge?${new URLSearchParams({ ...(debouncedSearch && { search: debouncedSearch }), ...(statusFilter !== "all" && { status: statusFilter }), page: String(page) })}`),
           fetch("/api/dashboard/metrics"),
+          fetch("/api/discharge/draft").catch(() => null),
         ]);
         const recordsJson = await recordsRes.json();
         const metricsJson = await metricsRes.json();
+        if (draftRes?.ok) {
+          const draftJson = await draftRes.json();
+          if (draftJson.success && draftJson.data) {
+            setSavedDraftAt(draftJson.data.updated_at);
+          } else {
+            setSavedDraftAt(null);
+          }
+        }
         if (recordsJson.success) {
           setRecords(recordsJson.data ?? []);
           setTotalPages(recordsJson.pagination?.totalPages ?? 0);
@@ -123,6 +133,25 @@ export function DashboardList({ onNavigate }: DashboardListProps) {
             </CardContent>
           </Card>
         </div>
+
+        {canCreate && savedDraftAt && (
+          <Card className="border-clinical-teal/20 bg-clinical-teal/5">
+            <CardContent className="flex items-center justify-between gap-4 p-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-clinical-teal/10 p-2">
+                  <Edit3 className="h-5 w-5 text-clinical-teal" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-deep-navy">You have a saved draft</p>
+                  <p className="text-xs text-cool-grey">Last saved {new Date(savedDraftAt).toLocaleString("en-NG", { timeZone: "Africa/Lagos" })}</p>
+                </div>
+              </div>
+              <Button size="sm" className="shrink-0" onClick={() => onNavigate({ name: "new" })}>
+                Resume Draft
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="flex flex-wrap gap-3">
           <div className="relative flex-1 min-w-[200px]">

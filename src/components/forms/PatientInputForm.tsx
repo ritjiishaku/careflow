@@ -26,7 +26,7 @@ import { LanguageSelector } from "./LanguageSelector";
 import { OfflineBanner } from "@/components/shared/OfflineBanner";
 import { useOfflineDraft } from "@/hooks/useOfflineDraft";
 import { useEffect, useCallback, useState, useRef } from "react";
-import { Save, AlertCircle, RefreshCw, X } from "lucide-react";
+import { Save, AlertCircle, RefreshCw, X, Cloud, CloudOff } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const medicationSchema = z.object({
@@ -116,6 +116,9 @@ export function PatientInputForm({
 
   const [restoredFromDraft, setRestoredFromDraft] = useState(false);
   const [dismissRestore, setDismissRestore] = useState(false);
+  const [serverSaving, setServerSaving] = useState(false);
+  const [serverSavedAt, setServerSavedAt] = useState<string | null>(null);
+  const [serverSaveFailed, setServerSaveFailed] = useState(false);
 
   const { draft, isOffline, lastSavedAt, autoSave, saveDraft } =
     useOfflineDraft(DRAFT_KEY);
@@ -137,6 +140,19 @@ export function PatientInputForm({
     setRestoredFromDraft(false);
   }
 
+  useEffect(() => {
+    if (draft?.data || form.formState.isSubmitSuccessful) return;
+    fetch("/api/discharge/draft").then(async (res) => {
+      if (!res.ok) return;
+      const json = await res.json();
+      if (json.success && json.data?.patient_input && !dismissRestore) {
+        form.reset(json.data.patient_input as PatientInputFormData);
+        setRestoredFromDraft(true);
+        setServerSavedAt(json.data.updated_at);
+      }
+    }).catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const autoSaveRef = useRef(autoSave);
   autoSaveRef.current = autoSave;
 
@@ -148,8 +164,28 @@ export function PatientInputForm({
     return () => sub.unsubscribe();
   }, [form]);
 
-  const handleSaveDraft = useCallback(() => {
-    saveDraft(form.getValues());
+  const handleSaveDraft = useCallback(async () => {
+    const data = form.getValues();
+    saveDraft(data);
+    setServerSaveFailed(false);
+    setServerSaving(true);
+    try {
+      const res = await fetch("/api/discharge/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ patientInput: data }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setServerSavedAt(json.savedAt);
+      } else {
+        setServerSaveFailed(true);
+      }
+    } catch {
+      setServerSaveFailed(true);
+    } finally {
+      setServerSaving(false);
+    }
   }, [saveDraft, form]);
 
   return (
@@ -571,13 +607,32 @@ export function PatientInputForm({
               type="button"
               variant="outline"
               onClick={handleSaveDraft}
+              disabled={serverSaving}
               className="touch-target-min"
               size="lg"
             >
-              <Save className="mr-2 h-4 w-4" />
-              Save as Draft
+              {serverSaving ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate/30 border-t-clinical-teal" />
+                  Saving...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Save className="h-4 w-4" />
+                  Save as Draft
+                </span>
+              )}
             </Button>
           </div>
+          {(serverSavedAt || serverSaveFailed) && (
+            <div className={`flex items-center gap-2 rounded-md px-3 py-2 text-xs ${serverSaveFailed ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"}`}>
+              {serverSaveFailed ? (
+                <><CloudOff className="h-3 w-3" /> Could not save to server. Draft saved locally.</>
+              ) : (
+                <><Cloud className="h-3 w-3" /> Server draft saved at {new Date(serverSavedAt!).toLocaleTimeString()}</>
+              )}
+            </div>
+          )}
         </form>
       </Form>
     </>
