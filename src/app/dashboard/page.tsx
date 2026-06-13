@@ -58,7 +58,7 @@ function DashboardContent() {
       )}
       {view === "output" && id && (
         <AnimatedView key="output">
-          <DischargeOutputView id={id} onNavigate={navigate} />
+          <DischargeOutputView id={id} />
         </AnimatedView>
       )}
     </AppShell>

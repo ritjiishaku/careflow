@@ -4,7 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import type { PatientInputFormData } from "@/components/forms/PatientInputForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft } from "lucide-react";
+
 
 const PatientInputForm = dynamic(
   () => import("@/components/forms/PatientInputForm").then((m) => m.PatientInputForm),
@@ -53,15 +53,9 @@ export function NewDischargeView({ onNavigate }: NewDischargeViewProps) {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4 pb-20 sm:p-6 sm:pb-6">
-      <div className="flex items-center gap-4">
-        <button type="button" onClick={() => onNavigate({ name: "list" })} className="touch-target-min inline-flex items-center gap-1.5 text-sm text-cool-grey hover:text-deep-navy transition-colors">
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </button>
-        <div>
-          <h1 className="text-xl font-bold text-deep-navy sm:text-2xl">New Discharge Record</h1>
-          <p className="mt-0.5 text-sm text-cool-grey">Fill in the patient information below to generate a discharge summary.</p>
-        </div>
+      <div>
+        <h1 className="text-xl font-bold text-deep-navy sm:text-2xl">New Discharge Record</h1>
+        <p className="mt-0.5 text-sm text-cool-grey">Fill in the patient information below to generate a discharge summary.</p>
       </div>
 
       {error && (

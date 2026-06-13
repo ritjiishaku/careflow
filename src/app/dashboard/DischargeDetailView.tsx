@@ -6,7 +6,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useRole } from "@/hooks/useRole";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, Edit, ArrowLeft, FileText, Calendar, User } from "lucide-react";
+import { Eye, Edit, FileText, Calendar, User } from "lucide-react";
 
 interface RecordDetail {
   recordId: string;
@@ -68,10 +68,7 @@ export function DischargeDetailView({ id, onNavigate }: DischargeDetailViewProps
         <div className="text-center">
           <FileText className="mx-auto h-12 w-12 text-cool-grey/50" />
           <p className="mt-4 text-lg font-medium text-deep-navy">{error ?? "Record not found"}</p>
-          <Button variant="outline" size="sm" className="mt-4 touch-target-min" onClick={() => onNavigate({ name: "list" })}>
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            Back to Dashboard
-          </Button>
+
         </div>
       </div>
     );
@@ -81,11 +78,6 @@ export function DischargeDetailView({ id, onNavigate }: DischargeDetailViewProps
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
-      <button type="button" onClick={() => onNavigate({ name: "list" })} className="inline-flex items-center gap-1.5 text-sm text-cool-grey hover:text-deep-navy transition-colors">
-        <ArrowLeft className="h-4 w-4" />
-        Back to Dashboard
-      </button>
-
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold text-deep-navy sm:text-3xl">{record.patientName}</h1>

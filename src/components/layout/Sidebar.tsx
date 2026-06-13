@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useRole } from "@/hooks/useRole";
+import { ConfirmModal } from "@/components/shared/ConfirmModal";
 
 import { signOut } from "next-auth/react";
 import {
@@ -79,6 +80,7 @@ export function Sidebar({ onClose }: SidebarProps) {
 
   const roleInfo = role ? ROLE_LABELS[role] : null;
   const [menuOpen, setMenuOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -163,12 +165,7 @@ export function Sidebar({ onClose }: SidebarProps) {
               Settings
             </button>
             <button
-              onClick={async () => {
-                if (window.confirm("Sign out of CareFlow?")) {
-                  await signOut({ redirect: false });
-                  window.location.href = "/login";
-                }
-              }}
+              onClick={() => setLogoutConfirmOpen(true)}
               className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-red-400/70 hover:bg-red-500/10 hover:text-red-400 transition-colors"
             >
               <LogOut className="h-4 w-4" />
@@ -177,6 +174,19 @@ export function Sidebar({ onClose }: SidebarProps) {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        open={logoutConfirmOpen}
+        onOpenChange={setLogoutConfirmOpen}
+        title="Sign out of CareFlow?"
+        description="You will be signed out of your account and redirected to the login page."
+        confirmLabel="Sign Out"
+        variant="destructive"
+        onConfirm={async () => {
+          await signOut({ redirect: false });
+          window.location.href = "/login";
+        }}
+      />
     </aside>
   );
 }

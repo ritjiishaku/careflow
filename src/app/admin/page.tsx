@@ -21,6 +21,7 @@ import {
 import { Edit2, Trash2, UserPlus, User, Copy, Check, RefreshCw, Search } from "lucide-react";
 import { toast } from "sonner";
 import { registerSchema, clinicianUpdateSchema } from "@/lib/validations";
+import { ConfirmModal } from "@/components/shared/ConfirmModal";
 
 interface Clinician {
   user_id: string;
@@ -59,6 +60,8 @@ export default function AdminPage() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [adminFieldErrors, setAdminFieldErrors] = useState<Record<string, string>>({});
   const [adminTouched, setAdminTouched] = useState<Record<string, boolean>>({});
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Clinician | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -224,10 +227,14 @@ export default function AdminPage() {
   }
 
   async function handleDeleteClinician(clinician: Clinician) {
-    const confirmed = window.confirm(`Remove ${clinician.full_name || clinician.email} from your facility? This cannot be undone.`);
-    if (!confirmed) return;
+    setDeleteTarget(clinician);
+    setDeleteConfirmOpen(true);
+  }
+
+  async function executeDelete() {
+    if (!deleteTarget) return;
     try {
-      const res = await fetch(`/api/admin/clinicians/${clinician.user_id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/clinicians/${deleteTarget.user_id}`, { method: "DELETE" });
       const json = await res.json();
       if (json.success) {
         toast.success("Clinician removed");
@@ -237,6 +244,9 @@ export default function AdminPage() {
       }
     } catch {
       toast.error("Network error. Please try again.");
+    } finally {
+      setDeleteConfirmOpen(false);
+      setDeleteTarget(null);
     }
   }
 
@@ -606,6 +616,16 @@ export default function AdminPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <ConfirmModal
+          open={deleteConfirmOpen}
+          onOpenChange={(open) => { if (!open) { setDeleteConfirmOpen(false); setDeleteTarget(null); } }}
+          title="Remove clinician from facility?"
+          description={`Are you sure you want to remove ${deleteTarget?.full_name || deleteTarget?.email || "this clinician"} from your facility? This action cannot be undone.`}
+          confirmLabel="Remove"
+          variant="destructive"
+          onConfirm={executeDelete}
+        />
       </div>
     </AppShell>
   );

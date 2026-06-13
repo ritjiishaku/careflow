@@ -13,7 +13,7 @@ import { PrintButton } from "@/components/shared/PrintButton";
 import { WhatsAppShareButton } from "@/components/shared/WhatsAppShareButton";
 import { useRole } from "@/hooks/useRole";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { Edit, Save, X, CheckCircle, Archive, ArrowLeft } from "lucide-react";
+import { Edit, Save, X, CheckCircle, Archive } from "lucide-react";
 import { toast } from "sonner";
 
 interface DischargeRecordData {
@@ -34,10 +34,9 @@ interface DischargeRecordData {
 
 interface DischargeOutputViewProps {
   id: string;
-  onNavigate: (view: { name: string; id?: string }) => void;
 }
 
-export function DischargeOutputView({ id, onNavigate }: DischargeOutputViewProps) {
+export function DischargeOutputView({ id }: DischargeOutputViewProps) {
   const { role, userId } = useRole();
   const [record, setRecord] = useState<DischargeRecordData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -207,11 +206,6 @@ export function DischargeOutputView({ id, onNavigate }: DischargeOutputViewProps
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-4 pb-4 sm:p-6 sm:pb-6">
-      <button type="button" onClick={() => onNavigate({ name: "list" })} className="inline-flex items-center gap-1.5 text-sm text-cool-grey hover:text-deep-navy transition-colors mb-2">
-        <ArrowLeft className="h-4 w-4" />
-        Back to Dashboard
-      </button>
-
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-4">
           <div>
@@ -399,10 +393,10 @@ export function DischargeOutputView({ id, onNavigate }: DischargeOutputViewProps
       <ConfirmModal
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title={confirmAction === "finalise" ? "Finalise Discharge Record?" : confirmAction === "archive" ? "Archive Discharge Record?" : "Unarchive Discharge Record?"}
-        description={confirmAction === "finalise" ? "This will mark the record as finalised. Only a Doctor can undo this action." : confirmAction === "archive" ? "Archived records can be unarchived later." : "This will return the record to draft status."}
+        title={confirmAction === "finalise" ? "Finalise discharge record?" : confirmAction === "archive" ? "Archive this record?" : "Unarchive this record?"}
+        description={confirmAction === "finalise" ? "This will lock the record as final and available for export. Only a Doctor can unfinalise it." : confirmAction === "archive" ? "The record will be archived. The patient-friendly instructions will still be accessible." : "This will return the record to draft status and move it back to the active list."}
         confirmLabel={confirmAction === "finalise" ? "Finalise" : confirmAction === "archive" ? "Archive" : "Unarchive"}
-        variant={confirmAction === "archive" ? "destructive" : "primary"}
+        variant={confirmAction === "finalise" ? "primary" : confirmAction === "archive" ? "warning" : "primary"}
         onConfirm={confirmAction === "finalise" ? handleFinalise : confirmAction === "archive" ? handleArchive : handleUnarchive}
       />
     </div>
