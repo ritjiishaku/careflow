@@ -538,9 +538,9 @@ export default function AdminPage() {
             </DialogHeader>
             <div className="space-y-3 py-2">
               <div className="rounded-lg border border-slate/10 bg-cool-off-white p-3 font-mono text-xs space-y-2.5">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 overflow-hidden">
                   <span className="text-cool-grey shrink-0">Email:</span>
-                  <span className="text-slate">{credentialsData?.email}</span>
+                  <span className="text-slate truncate min-w-0">{credentialsData?.email}</span>
                   <button
                     onClick={() => credentialsData && copyToClipboard(credentialsData.email, "email")}
                     className="shrink-0 rounded p-1 text-cool-grey hover:text-clinical-teal transition-colors"
@@ -549,9 +549,9 @@ export default function AdminPage() {
                     {copiedField === "email" ? <Check className="h-3.5 w-3.5 text-clinical-teal" /> : <Copy className="h-3.5 w-3.5" />}
                   </button>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 overflow-hidden">
                   <span className="text-cool-grey shrink-0">Password:</span>
-                  <span className="text-slate font-bold tracking-wide">{credentialsData?.defaultPassword}</span>
+                  <span className="text-slate truncate min-w-0 font-bold tracking-wide">{credentialsData?.defaultPassword}</span>
                   <button
                     onClick={() => credentialsData && copyToClipboard(credentialsData.defaultPassword, "password")}
                     className="shrink-0 rounded p-1 text-cool-grey hover:text-clinical-teal transition-colors"
@@ -572,7 +572,7 @@ export default function AdminPage() {
                   </button>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={copyAllCredentials}
                   className="flex items-center gap-1.5 rounded-lg border border-slate/20 bg-white px-3 py-2 text-xs font-medium text-slate hover:bg-slate/5 transition-colors"
